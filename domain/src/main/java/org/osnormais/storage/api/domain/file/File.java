@@ -23,7 +23,7 @@ public class File extends AggregateRoot<FileId> {
             handler.append(new ValidationError("id cant be null"));
 
         if (size < 0)
-            handler.append(new ValidationError("'size cant be greater than or equal to 0"));
+            handler.append(new ValidationError("size must be greater than or equal to 0"));
 
         if (Objects.isNull(checksum))
             handler.append(new ValidationError("checksum cant  be null"));
