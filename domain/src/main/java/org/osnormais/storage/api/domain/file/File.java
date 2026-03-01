@@ -19,7 +19,7 @@ public class File extends AggregateRoot<FileId> {
 
     @Override
     public void validate(ValidationHandler handler) {
-        if (getId() == null)
+        if (Objects.isNull(getId()))
             handler.append(new ValidationError("id cant be null"));
 
         if (size < 0)
