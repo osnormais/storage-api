@@ -41,7 +41,7 @@ public class FileTest {
     }
 
     @Test
-    void givenNullId_whenValidate_thenHandlerShouldAppendError() {
+    void givenNullId_whenConstructorCall_thenShoulThrowsNullPointerException() {
 
         final FileId expectedFileId = null;
         final var expectedSize = 2L;
