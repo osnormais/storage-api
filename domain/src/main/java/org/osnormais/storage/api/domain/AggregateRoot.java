@@ -1,8 +1,8 @@
 package org.osnormais.storage.api.domain;
 
-public abstract class AggregateRoot<ID extends Identifier<?>> extends Entity<ID> {
+public abstract class AggregateRoot<I extends Identifier<?>> extends Entity<I> {
 
-    protected AggregateRoot(final ID id) {
+    protected AggregateRoot(final I id) {
         super(id);
     }
 
