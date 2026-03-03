@@ -7,6 +7,6 @@ import org.osnormais.storage.api.domain.file.FileId;
 
 public interface FileQueryGateway {
 
-    Optional<File> findByid(FileId id);
+    Optional<File> findById(FileId id);
 
 }
