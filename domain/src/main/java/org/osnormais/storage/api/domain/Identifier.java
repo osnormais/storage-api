@@ -20,7 +20,7 @@ public abstract class Identifier<T> implements ValueObject {
     }
 
     @Override
-    public void validate(ValidationHandler handler) {
+    public void validate(final ValidationHandler handler) {
         if (Objects.isNull(this.id))
             handler.append(new ValidationError("'id' should not be null"));
     }
