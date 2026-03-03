@@ -1,10 +1,11 @@
-package org.osnormais.storage.api.domain.validation;
+package org.osnormais.storage.api.domain.validation.handler;
 
 import static java.util.Objects.requireNonNullElse;
 
 import java.util.List;
 
 import org.osnormais.storage.api.domain.exception.DomainException;
+import org.osnormais.storage.api.domain.validation.ValidationError;
 
 public interface ValidationHandler {
 

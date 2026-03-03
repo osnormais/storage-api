@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.osnormais.storage.api.domain.AggregateRoot;
 import org.osnormais.storage.api.domain.validation.ValidationError;
-import org.osnormais.storage.api.domain.validation.ValidationHandler;
+import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public class File extends AggregateRoot<FileId> {
 

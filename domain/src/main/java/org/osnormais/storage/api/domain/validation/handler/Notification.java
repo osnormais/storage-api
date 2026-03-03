@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.osnormais.storage.api.domain.exception.DomainException;
 import org.osnormais.storage.api.domain.validation.ValidationError;
-import org.osnormais.storage.api.domain.validation.ValidationHandler;
 
 public class Notification implements ValidationHandler {
 

@@ -4,7 +4,7 @@ import static java.util.Objects.isNull;
 
 import org.osnormais.storage.api.domain.ValueObject;
 import org.osnormais.storage.api.domain.validation.ValidationError;
-import org.osnormais.storage.api.domain.validation.ValidationHandler;
+import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public record Checksum(Algorithm algorithm, String value) implements ValueObject {
 

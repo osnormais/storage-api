@@ -1,6 +1,7 @@
 package org.osnormais.storage.api.domain;
 
-import org.osnormais.storage.api.domain.validation.ValidationHandler;
+import org.osnormais.storage.api.domain.validation.Validatable;
+import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public interface ValueObject extends Validatable {
 
