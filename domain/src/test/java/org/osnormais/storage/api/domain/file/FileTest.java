@@ -15,11 +15,11 @@ public class FileTest {
 
         final var expectedErrorsCount = 1;
         final var expectedHasErrors = true;
-        final var expectedErrorMessage = "size must be greater than or equal to 0";
+        final var expectedErrorMessage = "bytes must be greater than 0";
 
         final var expectedIdValue = UUID.randomUUID();
         final var expectedFileId = new FileId(expectedIdValue);
-        final var expectedSize = -2L;
+        final var expectedSize = new Size(-2L);
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
@@ -44,7 +44,7 @@ public class FileTest {
     void givenNullId_whenConstructorCall_thenShoulThrowsNullPointerException() {
 
         final FileId expectedFileId = null;
-        final var expectedSize = 2L;
+        final var expectedSize = new Size(2L);
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
@@ -65,7 +65,7 @@ public class FileTest {
 
         final var expectedIdValue = UUID.randomUUID();
         final var expectedFileId = new FileId(expectedIdValue);
-        final var expectedSize = 2L;
+        final var expectedSize = new Size(2L);
 
         final Checksum expectedChecksum = null;
 
@@ -90,7 +90,7 @@ public class FileTest {
 
         final var expectedIdValue = UUID.randomUUID();
         final var expectedFileId = new FileId(expectedIdValue);
-        final var expectedSize = 2L;
+        final var expectedSize = new Size(2L);
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
