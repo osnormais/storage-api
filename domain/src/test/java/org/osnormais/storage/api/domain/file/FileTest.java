@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 
 public class FileTest {
@@ -13,8 +14,8 @@ public class FileTest {
     @Test
     void givenNegativeSize_whenValidate_thenHandlerShouldAppendError() {
 
+        final var expectedExceptionMessage = "'File' validation failed";
         final var expectedErrorsCount = 1;
-        final var expectedHasErrors = true;
         final var expectedErrorMessage = "bytes must be greater than 0";
 
         final var expectedIdValue = UUID.randomUUID();
@@ -25,17 +26,25 @@ public class FileTest {
         final var expectedChecksumValue = "123";
         final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
 
-        final var expectedFile = new File(expectedFileId, expectedSize, expectedChecksum);
+        final TransferChannel expectedUploadChannel = null;
+        final TransferChannel expectedDownloadChannel = null;
 
-        final var handler = Notification.create();
+        final var actualException = assertThrows(
+                ValidationException.class,
+                () -> File.with(
+                        expectedFileId,
+                        expectedSize,
+                        expectedChecksum,
+                        expectedUploadChannel,
+                        expectedDownloadChannel));
 
-        expectedFile.validate(handler);
+        final var actualExceptionMessage = actualException.getMessage();
+        final var actualErrors = actualException.getErrors();
+        final var actualErrorsCount = actualException.getErrors().size();
 
-        final var actualHasErros = handler.hasErrors();
-        final var actualErrors = handler.getErrors();
-
+        assertEquals(actualExceptionMessage, expectedExceptionMessage);
         assertEquals(expectedErrorsCount, actualErrors.size());
-        assertEquals(expectedHasErrors, actualHasErros);
+        assertEquals(expectedErrorsCount, actualErrorsCount);
         assertEquals(expectedErrorMessage, actualErrors.get(0).message());
 
     }
@@ -50,8 +59,17 @@ public class FileTest {
         final var expectedChecksumValue = "123";
         final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
 
-        final var actualException = assertThrows(NullPointerException.class,
-                () -> new File(expectedFileId, expectedSize, expectedChecksum));
+        final TransferChannel expectedUploadChannel = null;
+        final TransferChannel expectedDownloadChannel = null;
+
+        final var actualException = assertThrows(
+                NullPointerException.class,
+                () -> File.with(
+                        expectedFileId,
+                        expectedSize,
+                        expectedChecksum,
+                        expectedUploadChannel,
+                        expectedDownloadChannel));
         assertEquals("'id' should not be null", actualException.getMessage());
 
     }
@@ -59,8 +77,8 @@ public class FileTest {
     @Test
     void givenNullChecksum_whenValidate_thenHandlerShouldAppendError() {
 
+        final var expectedExceptionMessage = "'File' validation failed";
         final var expectedErrorsCount = 1;
-        final var expectedHasErrors = true;
         final var expectedErrorMessage = "checksum cant be null";
 
         final var expectedIdValue = UUID.randomUUID();
@@ -69,18 +87,27 @@ public class FileTest {
 
         final Checksum expectedChecksum = null;
 
-        final var expectedFile = new File(expectedFileId, expectedSize, expectedChecksum);
+        final TransferChannel expectedUploadChannel = null;
+        final TransferChannel expectedDownloadChannel = null;
 
-        final var handler = Notification.create();
+        final var actualException = assertThrows(
+                ValidationException.class,
+                () -> File.with(
+                        expectedFileId,
+                        expectedSize,
+                        expectedChecksum,
+                        expectedUploadChannel,
+                        expectedDownloadChannel));
 
-        expectedFile.validate(handler);
+        final var actualExceptionMessage = actualException.getMessage();
+        final var actualErrors = actualException.getErrors();
+        final var actualErrorsCount = actualException.getErrors().size();
 
-        final var actualHasErrors = handler.hasErrors();
-        final var actualErrors = handler.getErrors();
-
+        assertEquals(actualExceptionMessage, expectedExceptionMessage);
         assertEquals(expectedErrorsCount, actualErrors.size());
-        assertEquals(expectedHasErrors, actualHasErrors);
+        assertEquals(expectedErrorsCount, actualErrorsCount);
         assertEquals(expectedErrorMessage, actualErrors.get(0).message());
+
     }
 
     @Test
@@ -96,7 +123,15 @@ public class FileTest {
         final var expectedChecksumValue = "123";
         final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
 
-        final var expectedFile = new File(expectedFileId, expectedSize, expectedChecksum);
+        final TransferChannel expectedUploadChannel = null;
+        final TransferChannel expectedDownloadChannel = null;
+
+        final var expectedFile = File.with(
+                expectedFileId,
+                expectedSize,
+                expectedChecksum,
+                expectedUploadChannel,
+                expectedDownloadChannel);
 
         final var handler = Notification.create();
 
