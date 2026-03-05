@@ -3,7 +3,7 @@ package org.osnormais.storage.api.domain.exception;
 import java.util.List;
 
 import org.osnormais.storage.api.domain.validation.ValidationError;
-import org.osnormais.storage.api.domain.validation.handler.Notification;
+import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public class ValidationException extends SilentDomainException {
 
@@ -11,10 +11,10 @@ public class ValidationException extends SilentDomainException {
         super(message, List.copyOf(errors));
     }
 
-    public static ValidationException with(final String message, final Notification notification) {
+    public static ValidationException with(final String message, final ValidationHandler handler) {
         return new ValidationException(
                 message,
-                notification
+                handler
                         .getErrors()
                         .stream()
                         .map(ValidationError::toDomainError)

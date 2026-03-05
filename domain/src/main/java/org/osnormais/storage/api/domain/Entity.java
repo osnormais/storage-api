@@ -2,6 +2,8 @@ package org.osnormais.storage.api.domain;
 
 import java.util.Objects;
 
+import org.osnormais.storage.api.domain.validation.Validatable;
+
 public abstract class Entity<I extends Identifier<?>> implements Validatable {
 
     private final I id;

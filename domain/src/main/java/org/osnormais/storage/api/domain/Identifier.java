@@ -3,7 +3,7 @@ package org.osnormais.storage.api.domain;
 import java.util.Objects;
 
 import org.osnormais.storage.api.domain.validation.ValidationError;
-import org.osnormais.storage.api.domain.validation.ValidationHandler;
+import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public abstract class Identifier<T> implements ValueObject {
 
@@ -20,7 +20,7 @@ public abstract class Identifier<T> implements ValueObject {
     }
 
     @Override
-    public void validate(ValidationHandler handler) {
+    public void validate(final ValidationHandler handler) {
         if (Objects.isNull(this.id))
             handler.append(new ValidationError("'id' should not be null"));
     }

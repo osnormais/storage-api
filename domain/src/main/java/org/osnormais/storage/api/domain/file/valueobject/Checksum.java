@@ -1,10 +1,10 @@
-package org.osnormais.storage.api.domain.file;
+package org.osnormais.storage.api.domain.file.valueobject;
 
 import static java.util.Objects.isNull;
 
 import org.osnormais.storage.api.domain.ValueObject;
 import org.osnormais.storage.api.domain.validation.ValidationError;
-import org.osnormais.storage.api.domain.validation.ValidationHandler;
+import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public record Checksum(Algorithm algorithm, String value) implements ValueObject {
 
@@ -17,12 +17,13 @@ public record Checksum(Algorithm algorithm, String value) implements ValueObject
     }
 
     @Override
-    public void validate(ValidationHandler handler) {
+    public void validate(final ValidationHandler handler) {
+
         if (isNull(algorithm))
-            handler.append(new ValidationError("checksum algorithm cant be null"));
+            handler.append(new ValidationError("'algorithm' should not be null"));
 
         if (isNull(value))
-            handler.append(new ValidationError("checksum value cant be null"));
+            handler.append(new ValidationError("'value' should not be null"));
 
     }
 
