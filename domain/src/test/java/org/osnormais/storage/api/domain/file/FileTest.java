@@ -15,7 +15,7 @@ import org.osnormais.storage.api.domain.validation.handler.Notification;
 public class FileTest {
 
     @Test
-    void givenNegativeSize_whenValidate_thenHandlerShouldAppendError() {
+    void givenNegativeSize_whenInstantiateUsingWith_thenShouldThrowsValidationException() {
 
         final var expectedExceptionMessage = "'File' validation failed";
         final var expectedErrorsCount = 1;
@@ -53,7 +53,7 @@ public class FileTest {
     }
 
     @Test
-    void givenNullId_whenConstructorCall_thenShoulThrowsNullPointerException() {
+    void givenNullId_whenInstantiateUsingWith_thenShouldThrowsNullPointerException() {
 
         final FileId expectedFileId = null;
         final var expectedSize = new Size(2L);
@@ -78,7 +78,7 @@ public class FileTest {
     }
 
     @Test
-    void givenNullChecksum_whenValidate_thenHandlerShouldAppendError() {
+    void givenNullChecksum_whenInstantiateUsingWith_thenShouldThrowsValidationException() {
 
         final var expectedExceptionMessage = "'File' validation failed";
         final var expectedErrorsCount = 1;
@@ -115,6 +115,7 @@ public class FileTest {
 
     @Test
     void givenValidFile_whenValidate_thenHandlerShouldNotAppendError() {
+
         final var expectedErrorsCount = 0;
         final var expectedHasErrors = false;
 
