@@ -17,12 +17,13 @@ public record Checksum(Algorithm algorithm, String value) implements ValueObject
     }
 
     @Override
-    public void validate(ValidationHandler handler) {
+    public void validate(final ValidationHandler handler) {
+
         if (isNull(algorithm))
-            handler.append(new ValidationError("checksum algorithm cant be null"));
+            handler.append(new ValidationError("'algorithm' should not be null"));
 
         if (isNull(value))
-            handler.append(new ValidationError("checksum value cant be null"));
+            handler.append(new ValidationError("'value' should not be null"));
 
     }
 
