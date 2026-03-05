@@ -7,6 +7,9 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.osnormais.storage.api.domain.exception.ValidationException;
+import org.osnormais.storage.api.domain.file.valueobject.Checksum;
+import org.osnormais.storage.api.domain.file.valueobject.Size;
+import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 
 public class FileTest {

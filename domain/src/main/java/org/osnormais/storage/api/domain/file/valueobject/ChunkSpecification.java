@@ -1,4 +1,4 @@
-package org.osnormais.storage.api.domain.file;
+package org.osnormais.storage.api.domain.file.valueobject;
 
 import org.osnormais.storage.api.domain.ValueObject;
 

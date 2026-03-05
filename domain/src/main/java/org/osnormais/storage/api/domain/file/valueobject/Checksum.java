@@ -1,4 +1,4 @@
-package org.osnormais.storage.api.domain.file;
+package org.osnormais.storage.api.domain.file.valueobject;
 
 import static java.util.Objects.isNull;
 
