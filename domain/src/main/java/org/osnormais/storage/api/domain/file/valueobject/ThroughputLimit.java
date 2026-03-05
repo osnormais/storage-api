@@ -9,7 +9,7 @@ public record ThroughputLimit(long bytesPerSecond) implements ValueObject {
     @Override
     public void validate(final ValidationHandler handler) {
 
-        if (bytesPerSecond < 0)
+        if (bytesPerSecond <= 0)
             handler.append(ValidationError.with("bytesPerSecond must be greater than or equal to 0"));
 
     }
