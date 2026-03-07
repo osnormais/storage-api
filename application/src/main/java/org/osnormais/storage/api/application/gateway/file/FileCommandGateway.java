@@ -1,4 +1,4 @@
-package org.osnormais.storage.api.application.file;
+package org.osnormais.storage.api.application.gateway.file;
 
 import org.osnormais.storage.api.domain.file.File;
 
