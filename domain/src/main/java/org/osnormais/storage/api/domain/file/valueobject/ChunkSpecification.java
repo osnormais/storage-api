@@ -31,6 +31,10 @@ public record ChunkSpecification(
 
     }
 
+    public Size chunkBytesSize(final Size fileSize) {
+        return size.bytes() > fileSize.bytes() ? fileSize : size;
+    }
+
     public Size lastChunkSize(final Size fileSize) {
 
         final long hasPartialChunk = fileSize.bytes() % size.bytes() != 0 ? 1 : 0;
