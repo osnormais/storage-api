@@ -73,6 +73,18 @@ public class File extends AggregateRoot<FileId> {
 
     }
 
+    public static File create(
+            final FileId id,
+            final Size size,
+            final Checksum checksum) {
+        return new File(
+                id,
+                size,
+                checksum,
+                null,
+                null);
+    }
+
     private void selfValidate() {
         final Notification notification = Notification.create();
         validate(notification);

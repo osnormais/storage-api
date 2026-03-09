@@ -9,6 +9,8 @@ public class FileId extends Identifier<UUID> {
     public FileId(UUID id) {
         super(id);
 
+    public static FileId of(final UUID id) {
+        return new FileId(id);
     }
 
     @Override

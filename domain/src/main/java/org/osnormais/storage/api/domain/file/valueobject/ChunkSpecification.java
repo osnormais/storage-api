@@ -10,6 +10,12 @@ public record ChunkSpecification(
         Size size,
         ParallelChunkLimit maxParallel) implements ValueObject {
 
+    public static ChunkSpecification create(
+            Size size,
+            ParallelChunkLimit maxParallel) {
+        return new ChunkSpecification(size, maxParallel);
+    }
+
     @Override
     public void validate(final ValidationHandler handler) {
 

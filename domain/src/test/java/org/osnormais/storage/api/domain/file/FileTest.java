@@ -22,7 +22,7 @@ public class FileTest {
         final var expectedErrorMessage = "bytes must be greater than 0";
 
         final var expectedIdValue = UUID.randomUUID();
-        final var expectedFileId = new FileId(expectedIdValue);
+        final var expectedFileId = FileId.of(expectedIdValue);
         final var expectedSize = new Size(-2L);
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
@@ -85,7 +85,7 @@ public class FileTest {
         final var expectedErrorMessage = "checksum cant be null";
 
         final var expectedIdValue = UUID.randomUUID();
-        final var expectedFileId = new FileId(expectedIdValue);
+        final var expectedFileId = FileId.of(expectedIdValue);
         final var expectedSize = new Size(2L);
 
         final Checksum expectedChecksum = null;
@@ -120,7 +120,7 @@ public class FileTest {
         final var expectedHasErrors = false;
 
         final var expectedIdValue = UUID.randomUUID();
-        final var expectedFileId = new FileId(expectedIdValue);
+        final var expectedFileId = FileId.of(expectedIdValue);
         final var expectedSize = new Size(2L);
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;

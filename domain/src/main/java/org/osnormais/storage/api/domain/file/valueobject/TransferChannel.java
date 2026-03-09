@@ -10,6 +10,12 @@ public record TransferChannel(
         ThroughputLimit throughputLimit,
         ChunkSpecification chunkSpecification) implements ValueObject {
 
+    public static TransferChannel create(
+            final ThroughputLimit throughputLimit,
+            final ChunkSpecification chunkSpecification) {
+        return new TransferChannel(throughputLimit, chunkSpecification);
+    }
+
     @Override
     public void validate(final ValidationHandler handler) {
 

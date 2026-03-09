@@ -16,6 +16,10 @@ public record Checksum(Algorithm algorithm, String value) implements ValueObject
 
     }
 
+    public static Checksum of(final String value, final Algorithm algorithm) {
+        return new Checksum(algorithm, value);
+    }
+
     @Override
     public void validate(final ValidationHandler handler) {
 
