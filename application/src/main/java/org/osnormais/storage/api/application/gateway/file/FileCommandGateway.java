@@ -6,4 +6,6 @@ public interface FileCommandGateway {
 
     void create(File file);
 
+    File update(File file);
+
 }
