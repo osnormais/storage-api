@@ -100,4 +100,12 @@ public class File extends AggregateRoot<FileId> {
         return checksum;
     }
 
+    public Optional<TransferChannel> getUploadChannel() {
+        return uploadChannel;
+    }
+
+    public Optional<TransferChannel> getDownloadChannel() {
+        return downloadChannel;
+    }
+
 }
