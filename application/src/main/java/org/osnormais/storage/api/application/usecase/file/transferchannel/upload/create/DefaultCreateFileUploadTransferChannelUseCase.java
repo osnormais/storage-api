@@ -56,7 +56,7 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
         return new CreateFileUploadTransferChannelOutput(
                 file.getId().getValue(),
                 transferChannel.chunkSpecification().totalChunks(file.getSize()),
-                transferChannel.chunkSpecification().chunkBytesSize(file.getSize()).bytes(),
+                transferChannel.chunkSpecification().effectiveChunkSize(file.getSize()).bytes(),
                 transferChannel.chunkSpecification().lastChunkSize(file.getSize()).bytes());
 
     }

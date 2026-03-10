@@ -104,7 +104,7 @@ public class ChunkSpecificationTest {
     }
 
     @Test
-    void givenFileSizeBiggerThanChunkSize_whenCalculatingChunkBytesSize_thenReturnsChunkSize() {
+    void givenFileSizeBiggerThanChunkSize_whenCalculatingChunkBytesSize_thenReturnsEffectiveChunkSize() {
 
         final var expectedChunkBytesSize = Size.of(25L);
 
@@ -115,14 +115,14 @@ public class ChunkSpecificationTest {
 
         final var fileSize = new Size(100L);
 
-        final var actualChunkBytesSize = chunkSpecification.chunkBytesSize(fileSize);
+        final var actualChunkBytesSize = chunkSpecification.effectiveChunkSize(fileSize);
 
         assertEquals(expectedChunkBytesSize, actualChunkBytesSize);
 
     }
 
     @Test
-    void givenFileSizeSmallerThanChunkSize_whenCalculatingChunkBytesSize_thenReturnsFileSize() {
+    void givenFileSizeSmallerThanChunkSize_whenCalculatingEffectiveChunkSize_thenReturnsFileSize() {
 
         final var expectedChunkBytesSize = Size.of(100L);
 
@@ -133,7 +133,7 @@ public class ChunkSpecificationTest {
 
         final var fileSize = new Size(100L);
 
-        final var actualChunkBytesSize = chunkSpecification.chunkBytesSize(fileSize);
+        final var actualChunkBytesSize = chunkSpecification.effectiveChunkSize(fileSize);
 
         assertEquals(expectedChunkBytesSize, actualChunkBytesSize);
 

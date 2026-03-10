@@ -31,7 +31,7 @@ public record ChunkSpecification(
 
     }
 
-    public Size chunkBytesSize(final Size fileSize) {
+    public Size effectiveChunkSize(final Size fileSize) {
         return size.bytes() > fileSize.bytes() ? fileSize : size;
     }
 
