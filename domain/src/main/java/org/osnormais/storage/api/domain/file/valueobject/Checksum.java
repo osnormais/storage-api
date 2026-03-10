@@ -16,7 +16,7 @@ public record Checksum(Algorithm algorithm, String value) implements ValueObject
 
     }
 
-    public static Checksum of(final String value, final Algorithm algorithm) {
+    public static Checksum of(final Algorithm algorithm, final String value) {
         return new Checksum(algorithm, value);
     }
 
