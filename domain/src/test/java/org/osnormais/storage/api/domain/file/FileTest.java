@@ -34,7 +34,7 @@ public class FileTest {
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final TransferChannel expectedUploadChannel = null;
         final TransferChannel expectedDownloadChannel = null;
@@ -67,7 +67,7 @@ public class FileTest {
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final TransferChannel expectedUploadChannel = null;
         final TransferChannel expectedDownloadChannel = null;
@@ -132,7 +132,7 @@ public class FileTest {
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final TransferChannel expectedUploadChannel = null;
         final TransferChannel expectedDownloadChannel = null;
@@ -165,7 +165,7 @@ public class FileTest {
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final var expectedThroughputLimit = ThroughputLimit.create(100L);
         final var expectedChunkSpecification = ChunkSpecification.create(Size.of(1024L), ParallelChunkLimit.of(2));
@@ -205,7 +205,7 @@ public class FileTest {
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final TransferChannel expectedUploadChannel = null;
         final TransferChannel expectedDownloadChannel = null;
@@ -247,7 +247,7 @@ public class FileTest {
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final var expectedThroughputLimit = ThroughputLimit.create(100L);
         final var expectedChunkSpecification = ChunkSpecification.create(Size.of(1024L), ParallelChunkLimit.of(2));

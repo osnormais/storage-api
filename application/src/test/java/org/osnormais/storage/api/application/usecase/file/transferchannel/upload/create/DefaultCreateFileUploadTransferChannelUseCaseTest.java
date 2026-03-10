@@ -62,11 +62,12 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 expectedChunkBytesSize,
                 expectedMaxParallelChunks);
 
-        final var expectedTransferChannel = TransferChannel.create(expectedThroughputLimit, expectedChunkSpecification);
+        final var expectedTransferChannel = TransferChannel.create(expectedThroughputLimit,
+                expectedChunkSpecification);
 
         final var expectedChecksumValue = "checksumValue";
         final var expectedChecksumAlgorithm = Checksum.Algorithm.MD5;
-        final var expectedCheckcum = Checksum.of(expectedChecksumValue, expectedChecksumAlgorithm);
+        final var expectedCheckcum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final var expectedFile = File.with(
                 expectedFileId,
@@ -187,7 +188,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
 
         final var expectedChecksumValue = "checksumValue";
         final var expectedChecksumAlgorithm = Checksum.Algorithm.MD5;
-        final var expectedCheckcum = Checksum.of(expectedChecksumValue, expectedChecksumAlgorithm);
+        final var expectedCheckcum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final var transferChannel = TransferChannel.create(expectedThroughputLimit, expectedChunkSpecification);
 

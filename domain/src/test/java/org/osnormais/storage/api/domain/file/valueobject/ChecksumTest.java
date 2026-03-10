@@ -20,7 +20,7 @@ public class ChecksumTest {
         final Algorithm expectedAlgorithm = null;
         final String expectedValue = null;
 
-        final var actualChecksum = assertDoesNotThrow(() -> new Checksum(expectedAlgorithm, expectedValue));
+        final var actualChecksum = assertDoesNotThrow(() -> Checksum.of(expectedAlgorithm, expectedValue));
 
         final var actualValidationHandler = Notification.create();
         actualChecksum.validate(actualValidationHandler);
@@ -42,7 +42,7 @@ public class ChecksumTest {
         final Algorithm expectedAlgorithm = Algorithm.MD5;
         final String expectedValue = "some-value";
 
-        final var actualChecksum = assertDoesNotThrow(() -> new Checksum(expectedAlgorithm, expectedValue));
+        final var actualChecksum = assertDoesNotThrow(() -> Checksum.of(expectedAlgorithm, expectedValue));
 
         final var actualValidationHandler = Notification.create();
         actualChecksum.validate(actualValidationHandler);
