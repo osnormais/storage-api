@@ -6,6 +6,10 @@ import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public record Size(long bytes) implements ValueObject {
 
+    public static Size of(final long bytes) {
+        return new Size(bytes);
+    }
+
     @Override
     public void validate(final ValidationHandler handler) {
 

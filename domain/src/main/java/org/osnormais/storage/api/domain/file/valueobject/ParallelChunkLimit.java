@@ -6,6 +6,10 @@ import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public record ParallelChunkLimit(int value) implements ValueObject {
 
+    public static ParallelChunkLimit of(final int value) {
+        return new ParallelChunkLimit(value);
+    }
+
     @Override
     public void validate(final ValidationHandler handler) {
 

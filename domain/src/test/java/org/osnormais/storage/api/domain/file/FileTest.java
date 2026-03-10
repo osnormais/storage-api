@@ -1,14 +1,21 @@
 package org.osnormais.storage.api.domain.file;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
+import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
+import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
+import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
+import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 
@@ -22,12 +29,12 @@ public class FileTest {
         final var expectedErrorMessage = "bytes must be greater than 0";
 
         final var expectedIdValue = UUID.randomUUID();
-        final var expectedFileId = new FileId(expectedIdValue);
+        final var expectedFileId = FileId.of(expectedIdValue);
         final var expectedSize = new Size(-2L);
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final TransferChannel expectedUploadChannel = null;
         final TransferChannel expectedDownloadChannel = null;
@@ -60,7 +67,7 @@ public class FileTest {
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final TransferChannel expectedUploadChannel = null;
         final TransferChannel expectedDownloadChannel = null;
@@ -85,7 +92,7 @@ public class FileTest {
         final var expectedErrorMessage = "checksum cant be null";
 
         final var expectedIdValue = UUID.randomUUID();
-        final var expectedFileId = new FileId(expectedIdValue);
+        final var expectedFileId = FileId.of(expectedIdValue);
         final var expectedSize = new Size(2L);
 
         final Checksum expectedChecksum = null;
@@ -120,12 +127,12 @@ public class FileTest {
         final var expectedHasErrors = false;
 
         final var expectedIdValue = UUID.randomUUID();
-        final var expectedFileId = new FileId(expectedIdValue);
+        final var expectedFileId = FileId.of(expectedIdValue);
         final var expectedSize = new Size(2L);
 
         final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
         final var expectedChecksumValue = "123";
-        final var expectedChecksum = new Checksum(expectedChecksumAlgorithm, expectedChecksumValue);
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
         final TransferChannel expectedUploadChannel = null;
         final TransferChannel expectedDownloadChannel = null;
@@ -148,4 +155,131 @@ public class FileTest {
         assertEquals(expectedHasErrors, actualHasErrors);
 
     }
+
+    @Test
+    void givenValidTransferChannel_whenCallsOpenUploadChannel_thenShouldOpenChannel() {
+
+        final var expectedIdValue = UUID.randomUUID();
+        final var expectedFileId = FileId.of(expectedIdValue);
+        final var expectedSize = new Size(2L);
+
+        final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
+        final var expectedChecksumValue = "123";
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
+
+        final var expectedThroughputLimit = ThroughputLimit.create(100L);
+        final var expectedChunkSpecification = ChunkSpecification.create(Size.of(1024L), ParallelChunkLimit.of(2));
+
+        final var expectedUploadChannel = TransferChannel.create(
+                expectedThroughputLimit,
+                expectedChunkSpecification);
+
+        final TransferChannel expectedDownloadChannel = null;
+
+        final var expectedFile = File.with(
+                expectedFileId,
+                expectedSize,
+                expectedChecksum,
+                null,
+                expectedDownloadChannel);
+
+        assertTrue(expectedFile.getUploadChannel().isEmpty());
+
+        assertDoesNotThrow(() -> expectedFile.openUploadChannel(expectedUploadChannel));
+
+        assertTrue(expectedFile.getUploadChannel().isPresent());
+        assertEquals(expectedUploadChannel, expectedFile.getUploadChannel().get());
+
+    }
+
+    @Test
+    void givenNullTransferChannel_whenCallsOpenUploadChannel_thenShouldThrowsInvalidArgumentException() {
+
+        final var expectedExceptionMessage = "Invalid argument provided.";
+        final var expectedErrorsCount = 1;
+        final var expectedErrorMessage = "'transferChannel' should not be null";
+
+        final var expectedIdValue = UUID.randomUUID();
+        final var expectedFileId = FileId.of(expectedIdValue);
+        final var expectedSize = new Size(2L);
+
+        final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
+        final var expectedChecksumValue = "123";
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
+
+        final TransferChannel expectedUploadChannel = null;
+        final TransferChannel expectedDownloadChannel = null;
+
+        final var expectedFile = File.with(
+                expectedFileId,
+                expectedSize,
+                expectedChecksum,
+                expectedUploadChannel,
+                expectedDownloadChannel);
+
+        assertTrue(expectedFile.getUploadChannel().isEmpty());
+
+        final var actualException = assertThrows(
+                InvalidArgumentException.class,
+                () -> expectedFile.openUploadChannel(expectedUploadChannel));
+
+        final var actualExceptionMessage = actualException.getMessage();
+        final var actualErrors = actualException.getErrors();
+        final var actualErrorsCount = actualException.getErrors().size();
+
+        assertEquals(actualExceptionMessage, expectedExceptionMessage);
+        assertEquals(expectedErrorsCount, actualErrors.size());
+        assertEquals(expectedErrorsCount, actualErrorsCount);
+        assertEquals(expectedErrorMessage, actualErrors.get(0).message());
+
+    }
+
+    @Test
+    void givenValidTransferChannel_whenCallsOpenUploadChannelWithAlreadyOpenChannel_thenShouldOpenChannel() {
+
+        final var expectedExceptionMessage = "Upload transfer channel already open";
+        final var expectedErrorsCount = 1;
+        final var expectedErrorMessage = "Upload transfer channel already open, please close the current channel before opening a new one";
+
+        final var expectedIdValue = UUID.randomUUID();
+        final var expectedFileId = FileId.of(expectedIdValue);
+        final var expectedSize = new Size(2L);
+
+        final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
+        final var expectedChecksumValue = "123";
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
+
+        final var expectedThroughputLimit = ThroughputLimit.create(100L);
+        final var expectedChunkSpecification = ChunkSpecification.create(Size.of(1024L), ParallelChunkLimit.of(2));
+
+        final var expectedUploadChannel = TransferChannel.create(
+                expectedThroughputLimit,
+                expectedChunkSpecification);
+
+        final TransferChannel expectedDownloadChannel = null;
+
+        final var expectedFile = File.with(
+                expectedFileId,
+                expectedSize,
+                expectedChecksum,
+                expectedUploadChannel,
+                expectedDownloadChannel);
+
+        assertTrue(expectedFile.getUploadChannel().isPresent());
+
+        final var actualException = assertThrows(
+                UploadTransferChannelAlreadyOpennedException.class,
+                () -> expectedFile.openUploadChannel(expectedUploadChannel));
+
+        final var actualExceptionMessage = actualException.getMessage();
+        final var actualErrors = actualException.getErrors();
+        final var actualErrorsCount = actualException.getErrors().size();
+
+        assertEquals(actualExceptionMessage, expectedExceptionMessage);
+        assertEquals(expectedErrorsCount, actualErrors.size());
+        assertEquals(expectedErrorsCount, actualErrorsCount);
+        assertEquals(expectedErrorMessage, actualErrors.get(0).message());
+
+    }
+
 }

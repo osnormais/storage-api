@@ -5,6 +5,9 @@ import static java.util.Objects.isNull;
 import java.util.Optional;
 
 import org.osnormais.storage.api.domain.AggregateRoot;
+import org.osnormais.storage.api.domain.exception.DomainException;
+import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
+import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
@@ -73,6 +76,32 @@ public class File extends AggregateRoot<FileId> {
 
     }
 
+    public static File create(
+            final FileId id,
+            final Size size,
+            final Checksum checksum) {
+        return new File(
+                id,
+                size,
+                checksum,
+                null,
+                null);
+    }
+
+    public File openUploadChannel(final TransferChannel transferChannel) {
+
+        if (isNull(transferChannel))
+            throw InvalidArgumentException.with(DomainException.Error.with("'transferChannel' should not be null"));
+
+        if (this.uploadChannel.isPresent())
+            throw UploadTransferChannelAlreadyOpennedException.create();
+
+        this.uploadChannel = Optional.of(transferChannel);
+
+        return this;
+
+    }
+
     private void selfValidate() {
         final Notification notification = Notification.create();
         validate(notification);
@@ -86,6 +115,14 @@ public class File extends AggregateRoot<FileId> {
 
     public Checksum getChecksum() {
         return checksum;
+    }
+
+    public Optional<TransferChannel> getUploadChannel() {
+        return uploadChannel;
+    }
+
+    public Optional<TransferChannel> getDownloadChannel() {
+        return downloadChannel;
     }
 
 }

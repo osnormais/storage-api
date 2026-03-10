@@ -6,6 +6,10 @@ import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
 public record ThroughputLimit(long bytesPerSecond) implements ValueObject {
 
+    public static ThroughputLimit create(long bytesPerSecond) {
+        return new ThroughputLimit(bytesPerSecond);
+    }
+
     @Override
     public void validate(final ValidationHandler handler) {
 
