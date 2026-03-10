@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
+import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
@@ -38,10 +39,17 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
         fileId.validate(handler);
         transferChannel.validate(handler);
 
+        if (handler.hasErrors())
+            throw ValidationException.with("Invalid input values", handler);
+
         final File file = fileQueryGateway
                 .findById(fileId)
-                .orElseThrow(() -> NotFoundException.create(File.class, fileId))
-                .openUploadChannel(transferChannel);
+                .orElseThrow(() -> NotFoundException.create(File.class, fileId));
+
+        handler.validate(() -> file.openUploadChannel(transferChannel));
+
+        if (handler.hasErrors())
+            throw ValidationException.with("Failed to open upload transfer channel", handler);
 
         fileCommandGateway.update(file);
 
