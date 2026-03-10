@@ -9,7 +9,7 @@ import org.osnormais.storage.api.domain.validation.handler.Notification;
 public class ChunkSpecificationTest {
 
     @Test
-    void givenSizeAndMaxParametersNull_whenValidate_thenShouldHandlerAppendTwoErrors() {
+    void givenSizeAndMaxParallelNull_whenValidate_thenShouldHandlerAppendTwoErrors() {
 
         final var expectedErrorCount = 2;
 
