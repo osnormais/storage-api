@@ -65,9 +65,9 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
 
         final ThroughputLimit throughputLimit = ThroughputLimit.create(input.throughputBytesLimit());
 
-        final Size chunkSpecificationSize = new Size(input.chunkBytesSize());
-        final ParallelChunkLimit chunkSpecificationParallelChunkLimit = new ParallelChunkLimit(
-                input.maxParallelChunks());
+        final Size chunkSpecificationSize = Size.of(input.chunkBytesSize());
+        final ParallelChunkLimit chunkSpecificationParallelChunkLimit = ParallelChunkLimit
+                .of(input.maxParallelChunks());
 
         final ChunkSpecification chunkSpecification = ChunkSpecification
                 .create(

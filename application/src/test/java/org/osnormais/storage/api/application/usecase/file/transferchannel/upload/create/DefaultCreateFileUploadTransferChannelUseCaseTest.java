@@ -57,7 +57,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
         final var expectedFileSize = Size.of(expectedFileSizeValue);
         final var expectedThroughputLimit = ThroughputLimit.create(expectedThroughputBytesLimitValue);
         final var expectedChunkBytesSize = Size.of(expectedChunkBytesSizeValue);
-        final var expectedMaxParallelChunks = new ParallelChunkLimit(expectedMaxParallelChunksValue);
+        final var expectedMaxParallelChunks = ParallelChunkLimit.of(expectedMaxParallelChunksValue);
         final var expectedChunkSpecification = ChunkSpecification.create(
                 expectedChunkBytesSize,
                 expectedMaxParallelChunks);
@@ -135,7 +135,6 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
         assertEquals(expectedErrorsCount, actualException.getErrors().size());
         assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
 
-
     }
 
     @Test
@@ -181,7 +180,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
         final var expectedFileSize = Size.of(expectedFileSizeValue);
         final var expectedThroughputLimit = ThroughputLimit.create(expectedThroughputBytesLimitValue);
         final var expectedChunkBytesSize = Size.of(expectedChunkBytesSizeValue);
-        final var expectedMaxParallelChunks = new ParallelChunkLimit(expectedMaxParallelChunksValue);
+        final var expectedMaxParallelChunks = ParallelChunkLimit.of(expectedMaxParallelChunksValue);
         final var expectedChunkSpecification = ChunkSpecification.create(
                 expectedChunkBytesSize,
                 expectedMaxParallelChunks);
