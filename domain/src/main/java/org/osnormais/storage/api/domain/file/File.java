@@ -84,8 +84,8 @@ public class File extends AggregateRoot<FileId> {
                 id,
                 size,
                 checksum,
-                null,
-                null);
+                Optional.empty(),
+                Optional.empty());
     }
 
     public File openUploadChannel(final TransferChannel transferChannel) {
