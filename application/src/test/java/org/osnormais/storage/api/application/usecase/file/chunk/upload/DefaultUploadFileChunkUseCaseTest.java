@@ -193,9 +193,9 @@ public class DefaultUploadFileChunkUseCaseTest {
 
         final var expectedConcurrencyTrackerCount = 2;
 
-        final var expectedExceptionMessage = "Maximum parallel chunk uploads reached for the file.";
+        final var expectedExceptionMessage = "Maximum parallel chunk reached for the file.";
         final var expectedExceptionErrrosCount = 1;
-        final var expectedExceptionErrrorMessage0 = "Maximum parallel chunk uploads of "
+        final var expectedExceptionErrrorMessage0 = "Maximum parallel chunk of "
                 + expectedParallelChunkLimitValue
                 + " exceeded for the file.";
 
