@@ -7,7 +7,7 @@ import org.osnormais.storage.api.domain.Identifier;
 
 public class NotFoundException extends SilentApplicationException {
 
-    private static final String MESSAGE_TEMPLATE = "[%S] not found";
+    private static final String MESSAGE_TEMPLATE = "[%s] not found";
     private static final String ERROR_TEMPLATE = "[%s] with id [%s] not found";
 
     private <E extends Entity<I>, I extends Identifier<?>> NotFoundException(
