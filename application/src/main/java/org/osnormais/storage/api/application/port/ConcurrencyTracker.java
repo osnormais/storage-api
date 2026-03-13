@@ -5,7 +5,7 @@ import static java.util.Objects.requireNonNull;
 
 import org.osnormais.storage.api.domain.Identifier;
 
-public abstract class ConcurrencyTracker {
+public class ConcurrencyTracker {
 
     private final Port port;
     private final String[] tags;
