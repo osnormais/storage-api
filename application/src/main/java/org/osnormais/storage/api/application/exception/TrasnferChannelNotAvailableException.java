@@ -18,7 +18,7 @@ public class TrasnferChannelNotAvailableException extends SilentApplicationExcep
                                 "["
                                         + type
                                         + "]"
-                                        + "Trasnfer channel of FileId=["
+                                        + "Trasnfer channel of File=["
                                         + fileId.getStringValue()
                                         + "] is not available")));
     }
