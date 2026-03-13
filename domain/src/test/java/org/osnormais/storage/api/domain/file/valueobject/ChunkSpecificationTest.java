@@ -9,7 +9,7 @@ import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 
 public class ChunkSpecificationTest {
-        
+
     @Test
     void givenSizeAndMaxParallelNull_whenValidate_thenShouldHandlerAppendTwoErrors() {
 
@@ -248,6 +248,50 @@ public class ChunkSpecificationTest {
         assertEquals(expectedExceptionMessage, actualException.getMessage());
         assertEquals(expectedErrorsCount, actualException.getErrors().size());
         assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
+
+    }
+
+    @Test
+    void givenAValidArguments_whenCalculatingEffectiveChunkSize_thenShouldReturnEffectiveLastChunkSize() {
+
+        final var expectedChunkIndex = 4L;
+        final var expectedFileSize = Size.of(105);
+        final var expectedEffectiveChunkSize = Size.of(5);
+
+        final var expectedChunkSize = new Size(25L);
+        final var expectedParallelChunkLimit = new ParallelChunkLimit(1);
+
+        final var chunkSpecification = new ChunkSpecification(expectedChunkSize, expectedParallelChunkLimit);
+
+        final var actualChunkSize = assertDoesNotThrow(
+                () -> chunkSpecification
+                        .effectiveChunkSize(
+                                expectedFileSize,
+                                expectedChunkIndex));
+
+        assertEquals(expectedEffectiveChunkSize, actualChunkSize);
+
+    }
+
+    @Test
+    void givenAValidArguments_whenCalculatingEffectiveChunkSize_thenShouldReturnEffectiveChunkSize() {
+
+        final var expectedChunkIndex = 0L;
+        final var expectedFileSize = Size.of(105);
+        final var expectedEffectiveChunkSize = Size.of(25);
+
+        final var expectedChunkSize = new Size(25L);
+        final var expectedParallelChunkLimit = new ParallelChunkLimit(1);
+
+        final var chunkSpecification = new ChunkSpecification(expectedChunkSize, expectedParallelChunkLimit);
+
+        final var actualChunkSize = assertDoesNotThrow(
+                () -> chunkSpecification
+                        .effectiveChunkSize(
+                                expectedFileSize,
+                                expectedChunkIndex));
+
+        assertEquals(expectedEffectiveChunkSize, actualChunkSize);
 
     }
 
