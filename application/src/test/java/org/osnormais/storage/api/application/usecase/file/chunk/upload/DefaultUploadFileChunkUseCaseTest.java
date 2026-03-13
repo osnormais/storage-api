@@ -28,7 +28,6 @@ import org.osnormais.storage.api.application.port.ConcurrencyTracker;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
-import org.osnormais.storage.api.domain.file.valueobject.Checksum.Algorithm;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
@@ -248,19 +247,6 @@ public class DefaultUploadFileChunkUseCaseTest {
         final var expectedFileSize = Size.of(expectedFileSizeInBytesValue);
         final var expectedFileChecksum = Checksum.of(expectedFileChecksumAlgorithm, expectedFileChecksumValue);
 
-        final var expectedThroughputLimitBytesPerSecond = 1024L;
-        final var expectedThroughputLimit = ThroughputLimit.create(expectedThroughputLimitBytesPerSecond);
-
-        final var expectedChunkSpecificationSizeValue = 100L;
-        final var expectedChunkSpecificationSize = Size.of(expectedChunkSpecificationSizeValue);
-
-        final var expectedParallelChunkLimitValue = 2;
-        final var expectedParallelChunkLimit = ParallelChunkLimit.of(expectedParallelChunkLimitValue);
-
-        final var expectedChunkSpecification = ChunkSpecification.create(
-                expectedChunkSpecificationSize,
-                expectedParallelChunkLimit);
-
         final TransferChannel expectedUploadTrasnferChannel = null;
 
         final var expectedFile = File.with(
@@ -269,8 +255,6 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileChecksum,
                 expectedUploadTrasnferChannel,
                 null);
-
-        final var expectedConcurrencyTrackerCount = 0;
 
         final var expectedExceptionMessage = "Trasnfer channel is not available.";
         final var expectedExceptionErrrosCount = 1;
@@ -317,13 +301,8 @@ public class DefaultUploadFileChunkUseCaseTest {
         final var expectedChecksumValue = "checksum";
 
         final var expectedFileIdValue = UUID.randomUUID();
-        final var expectedFileSizeInBytesValue = 1024L;
-        final var expectedFileChecksumAlgorithm = expectedChecksumAlgorithm;
-        final var expectedFileChecksumValue = expectedChecksumValue;
 
         final var expectedFileId = FileId.of(expectedFileIdValue);
-        final var expectedFileSize = Size.of(expectedFileSizeInBytesValue);
-        final var expectedFileChecksum = Checksum.of(Algorithm.CRC_32, "file_checksum");
 
         final var expectedExceptionMessage = "[%s] not found".formatted(File.class.getSimpleName());
         final var expectedExceptionErrrosCount = 1;
