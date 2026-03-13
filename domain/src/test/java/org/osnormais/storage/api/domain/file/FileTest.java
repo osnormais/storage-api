@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -279,6 +280,55 @@ public class FileTest {
         assertEquals(expectedErrorsCount, actualErrors.size());
         assertEquals(expectedErrorsCount, actualErrorsCount);
         assertEquals(expectedErrorMessage, actualErrors.get(0).message());
+
+    }
+
+    @Test
+    void givenValidArguments_whenCallsCreate_thenShouldCreateFile() {
+
+        final var expectedIdValue = UUID.randomUUID();
+        final var expectedFileId = FileId.of(expectedIdValue);
+        final var expectedSize = new Size(2L);
+
+        final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
+        final var expectedChecksumValue = "123";
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
+
+        final var expectedUploadChannel = Optional.<TransferChannel>empty();
+        final var expectedDownloadChannel = Optional.<TransferChannel>empty();
+
+        final var actualFile = assertDoesNotThrow(() -> File.create(expectedFileId, expectedSize, expectedChecksum));
+
+        assertEquals(expectedIdValue, actualFile.getId().getValue());
+        assertEquals(expectedFileId, actualFile.getId());
+        assertEquals(expectedSize, actualFile.getSize());
+        assertEquals(expectedChecksum, actualFile.getChecksum());
+        assertEquals(expectedUploadChannel, actualFile.getUploadChannel());
+        assertEquals(expectedDownloadChannel, actualFile.getDownloadChannel());
+
+    }
+
+    @Test
+    void givenNullArguments_whenCallsCreate_thenShouldThrowsValidationException() {
+
+        final var expectedExceptionMessage = "'File' validation failed";
+
+        final var expectedErrorCount = 2;
+        final var expectedErrorMessage0 = "size cant be null";
+        final var expectedErrorMessage1 = "checksum cant be null";
+
+        final var expectedIdValue = UUID.randomUUID();
+        final var expectedFileId = FileId.of(expectedIdValue);
+        final Size expectedSize = null;
+        final Checksum expectedChecksum = null;
+
+        final var actualException = assertThrows(ValidationException.class,
+                () -> File.create(expectedFileId, expectedSize, expectedChecksum));
+
+        assertEquals(actualException.getMessage(), expectedExceptionMessage);
+        assertEquals(actualException.getErrors().size(), expectedErrorCount);
+        assertEquals(actualException.getErrors().get(0).message(), expectedErrorMessage0);
+        assertEquals(actualException.getErrors().get(1).message(), expectedErrorMessage1);
 
     }
 
