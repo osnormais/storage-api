@@ -116,7 +116,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
         final var expectedFileId = FileId.of(expectedFileIdValue);
 
         final var expectedErrorsCount = 1;
-        final var expectedExceptionMessage = "[%S] not found".formatted(File.class.getSimpleName());
+        final var expectedExceptionMessage = "[%s] not found".formatted(File.class.getSimpleName());
         final var expectedErrorMessage = "[%s] with id [%s] not found".formatted(
                 File.class.getSimpleName(),
                 expectedFileId.getStringValue());

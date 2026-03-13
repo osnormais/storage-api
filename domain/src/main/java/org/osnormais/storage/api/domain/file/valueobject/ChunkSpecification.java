@@ -3,6 +3,8 @@ package org.osnormais.storage.api.domain.file.valueobject;
 import static java.util.Objects.isNull;
 
 import org.osnormais.storage.api.domain.ValueObject;
+import org.osnormais.storage.api.domain.exception.DomainException;
+import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.validation.ValidationError;
 import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
@@ -33,6 +35,29 @@ public record ChunkSpecification(
 
     public Size effectiveChunkSize(final Size fileSize) {
         return size.bytes() > fileSize.bytes() ? fileSize : size;
+    }
+
+    public Size effectiveChunkSize(final Size fileSize, final Long chunkIndex) {
+
+        if (isNull(fileSize))
+            throw InvalidArgumentException
+                    .with(DomainException.Error.with("'fileSize' should not be null"));
+
+        if (isNull(chunkIndex))
+            throw InvalidArgumentException
+                    .with(DomainException.Error.with("'chunkIndex' should not be null"));
+
+        final Long totalChunks = totalChunks(fileSize);
+
+        if (chunkIndex < 0 || chunkIndex >= totalChunks)
+            throw InvalidArgumentException
+                    .with(DomainException.Error
+                            .with("'chunkIndex' out of bounds"));
+
+        return (chunkIndex == totalChunks - 1)
+                ? lastChunkSize(fileSize)
+                : effectiveChunkSize(fileSize);
+
     }
 
     public Size lastChunkSize(final Size fileSize) {

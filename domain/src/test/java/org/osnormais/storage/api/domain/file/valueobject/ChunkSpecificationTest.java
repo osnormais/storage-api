@@ -2,8 +2,10 @@ package org.osnormais.storage.api.domain.file.valueobject;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
+import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 
 public class ChunkSpecificationTest {
@@ -136,6 +138,160 @@ public class ChunkSpecificationTest {
         final var actualChunkBytesSize = chunkSpecification.effectiveChunkSize(fileSize);
 
         assertEquals(expectedChunkBytesSize, actualChunkBytesSize);
+
+    }
+
+    @Test
+    void givenANullChunkIndex_whenCalculatingEffectiveChunkSize_thenShouldThrowsInvalidArgumentException() {
+
+        final var expectedExceptionMessage = "Invalid argument provided.";
+        final var expectedErrorsCount = 1;
+        final var expectedErrorMessage = "'chunkIndex' should not be null";
+
+        final Long expectedChunkIndex = null;
+        final var expectedFileSize = new Size(100L);
+
+        final var expectedChunkSize = new Size(25L);
+        final var expectedParallelChunkLimit = new ParallelChunkLimit(1);
+
+        final var chunkSpecification = new ChunkSpecification(expectedChunkSize, expectedParallelChunkLimit);
+
+        final var actualException = assertThrows(
+                InvalidArgumentException.class,
+                () -> chunkSpecification
+                        .effectiveChunkSize(
+                                expectedFileSize,
+                                expectedChunkIndex));
+
+        assertEquals(expectedExceptionMessage, actualException.getMessage());
+        assertEquals(expectedErrorsCount, actualException.getErrors().size());
+        assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
+
+    }
+
+    @Test
+    void givenANullFileSize_whenCalculatingEffectiveChunkSize_thenShouldThrowsInvalidArgumentException() {
+
+        final var expectedExceptionMessage = "Invalid argument provided.";
+        final var expectedErrorsCount = 1;
+        final var expectedErrorMessage = "'fileSize' should not be null";
+
+        final var expectedChunkIndex = 1L;
+        final Size expectedFileSize = null;
+
+        final var expectedChunkSize = new Size(25L);
+        final var expectedParallelChunkLimit = new ParallelChunkLimit(1);
+
+        final var chunkSpecification = new ChunkSpecification(expectedChunkSize, expectedParallelChunkLimit);
+
+        final var actualException = assertThrows(
+                InvalidArgumentException.class,
+                () -> chunkSpecification
+                        .effectiveChunkSize(
+                                expectedFileSize,
+                                expectedChunkIndex));
+
+        assertEquals(expectedExceptionMessage, actualException.getMessage());
+        assertEquals(expectedErrorsCount, actualException.getErrors().size());
+        assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
+
+    }
+
+    @Test
+    void givenAnNegativeChunkIndex_whenCalculatingEffectiveChunkSize_thenShouldThrowsInvalidArgumentException() {
+
+        final var expectedExceptionMessage = "Invalid argument provided.";
+        final var expectedErrorsCount = 1;
+        final var expectedErrorMessage = "'chunkIndex' out of bounds";
+        final var expectedChunkIndex = -1L;
+        final var expectedFileSize = Size.of(1024L);
+
+        final var expectedChunkSize = new Size(25L);
+        final var expectedParallelChunkLimit = new ParallelChunkLimit(1);
+
+        final var chunkSpecification = new ChunkSpecification(expectedChunkSize, expectedParallelChunkLimit);
+
+        final var actualException = assertThrows(
+                InvalidArgumentException.class,
+                () -> chunkSpecification
+                        .effectiveChunkSize(
+                                expectedFileSize,
+                                expectedChunkIndex));
+
+        assertEquals(expectedExceptionMessage, actualException.getMessage());
+        assertEquals(expectedErrorsCount, actualException.getErrors().size());
+        assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
+
+    }
+
+    @Test
+    void givenAnOutOfBoundChunkIndex_whenCalculatingEffectiveChunkSize_thenShouldThrowsInvalidArgumentException() {
+
+        final var expectedExceptionMessage = "Invalid argument provided.";
+        final var expectedErrorsCount = 1;
+        final var expectedErrorMessage = "'chunkIndex' out of bounds";
+        final var expectedChunkIndex = 9999L;
+        final var expectedFileSize = Size.of(1024L);
+
+        final var expectedChunkSize = new Size(25L);
+        final var expectedParallelChunkLimit = new ParallelChunkLimit(1);
+
+        final var chunkSpecification = new ChunkSpecification(expectedChunkSize, expectedParallelChunkLimit);
+
+        final var actualException = assertThrows(
+                InvalidArgumentException.class,
+                () -> chunkSpecification
+                        .effectiveChunkSize(
+                                expectedFileSize,
+                                expectedChunkIndex));
+
+        assertEquals(expectedExceptionMessage, actualException.getMessage());
+        assertEquals(expectedErrorsCount, actualException.getErrors().size());
+        assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
+
+    }
+
+    @Test
+    void givenAValidArguments_whenCalculatingEffectiveChunkSize_thenShouldReturnEffectiveLastChunkSize() {
+
+        final var expectedChunkIndex = 4L;
+        final var expectedFileSize = Size.of(105);
+        final var expectedEffectiveChunkSize = Size.of(5);
+
+        final var expectedChunkSize = new Size(25L);
+        final var expectedParallelChunkLimit = new ParallelChunkLimit(1);
+
+        final var chunkSpecification = new ChunkSpecification(expectedChunkSize, expectedParallelChunkLimit);
+
+        final var actualChunkSize = assertDoesNotThrow(
+                () -> chunkSpecification
+                        .effectiveChunkSize(
+                                expectedFileSize,
+                                expectedChunkIndex));
+
+        assertEquals(expectedEffectiveChunkSize, actualChunkSize);
+
+    }
+
+    @Test
+    void givenAValidArguments_whenCalculatingEffectiveChunkSize_thenShouldReturnEffectiveChunkSize() {
+
+        final var expectedChunkIndex = 0L;
+        final var expectedFileSize = Size.of(105);
+        final var expectedEffectiveChunkSize = Size.of(25);
+
+        final var expectedChunkSize = new Size(25L);
+        final var expectedParallelChunkLimit = new ParallelChunkLimit(1);
+
+        final var chunkSpecification = new ChunkSpecification(expectedChunkSize, expectedParallelChunkLimit);
+
+        final var actualChunkSize = assertDoesNotThrow(
+                () -> chunkSpecification
+                        .effectiveChunkSize(
+                                expectedFileSize,
+                                expectedChunkIndex));
+
+        assertEquals(expectedEffectiveChunkSize, actualChunkSize);
 
     }
 
