@@ -1,0 +1,3 @@
+storage:
+  fs:
+    root-path: ${STORAGE_FS_ROOT_PATH:./data}

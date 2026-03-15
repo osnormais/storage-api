@@ -1,0 +1,17 @@
+server:
+  port: ${application.server.port}
+spring:
+  profiles:
+    active:
+      - ${application.vendor.concurrency-tracker}
+      - ${application.vendor.database}
+      - ${application.vendor.storage}
+
+application:
+  name: storage-api
+  server:
+    port: ${SERVER_PORT:8080}
+  vendor:
+    concurrency-tracker: ${VENDOR_CONCURRENCY_TRACKER:inmemory}
+    database: ${VENDOR_DATABASE:inmemory}
+    storage: ${VENDOR_STORAGE:fs}

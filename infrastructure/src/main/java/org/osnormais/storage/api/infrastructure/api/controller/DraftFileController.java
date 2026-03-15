@@ -1,0 +1,91 @@
+package org.osnormais.storage.api.infrastructure.api.controller;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.UUID;
+
+import org.osnormais.storage.api.application.usecase.file.chunk.upload.UploadFileChunkInput;
+import org.osnormais.storage.api.application.usecase.file.chunk.upload.UploadFileChunkUseCase;
+import org.osnormais.storage.api.application.usecase.file.create.CreateFileInput;
+import org.osnormais.storage.api.application.usecase.file.create.CreateFileOutput;
+import org.osnormais.storage.api.application.usecase.file.create.CreateFileUseCase;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelInput;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelOutput;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelUseCase;
+import org.osnormais.storage.api.domain.file.valueobject.Checksum;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+
+@RequestMapping("draft/files")
+@RestController
+public class DraftFileController {
+
+    private final CreateFileUseCase createFileUseCase;
+    private final CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase;
+    private final UploadFileChunkUseCase uploadFileChunkUseCase;
+
+    public DraftFileController(
+            CreateFileUseCase createFileUseCase,
+            CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase,
+            UploadFileChunkUseCase uploadFileChunkUseCase) {
+        this.createFileUseCase = createFileUseCase;
+        this.createFileUploadTransferChannelUseCase = createFileUploadTransferChannelUseCase;
+        this.uploadFileChunkUseCase = uploadFileChunkUseCase;
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> createFile(@RequestBody CreateFileInput input) {
+
+        CreateFileOutput output = createFileUseCase.execute(input);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(output.id().toString())
+                .toUri();
+
+        return ResponseEntity.created(location).build();
+
+    }
+
+    @PostMapping("upload-transfer-channel")
+    public ResponseEntity<CreateFileUploadTransferChannelOutput> createFileUploadTrasnferChannel(
+            @RequestBody CreateFileUploadTransferChannelInput input) {
+        return ResponseEntity
+                .ok()
+                .body(createFileUploadTransferChannelUseCase.execute(input));
+    }
+
+    @PostMapping("{fileId}/chunks/{chunkIndex}")
+    public ResponseEntity<Void> uploadFileChunk(
+            @PathVariable UUID fileId,
+            @PathVariable Long chunkIndex,
+            @RequestHeader("X-Checksum-Value") String checksumValue,
+            @RequestHeader("X-Checksum-Algorithm") Checksum.Algorithm checksumAlgorithm,
+            HttpServletRequest request) throws IOException {
+
+        UploadFileChunkInput input = new UploadFileChunkInput(
+                fileId,
+                chunkIndex,
+                request.getInputStream(),
+                checksumAlgorithm,
+                checksumValue);
+
+        uploadFileChunkUseCase.execute(input);
+
+        return ResponseEntity
+                .noContent()
+                .build();
+
+    }
+
+}
