@@ -10,7 +10,7 @@ public class ConcurrencyTracker {
     private final Port port;
     private final String[] tags;
 
-    protected ConcurrencyTracker(
+    public ConcurrencyTracker(
             final Port port,
             final String... tags) {
         this.port = requireNonNull(port);
