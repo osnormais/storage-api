@@ -5,6 +5,7 @@ spring:
     active:
       - ${application.vendor.concurrency-tracker}
       - ${application.vendor.database}
+      - ${application.vendor.storage}
 
 application:
   name: storage-api
@@ -13,3 +14,4 @@ application:
   vendor:
     concurrency-tracker: ${VENDOR_CONCURRENCY_TRACKER:inmemory}
     database: ${VENDOR_DATABASE:inmemory}
+    storage: ${VENDOR_STORAGE:fs}
