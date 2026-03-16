@@ -47,7 +47,8 @@ public class FileTest {
                         expectedSize,
                         expectedChecksum,
                         expectedUploadChannel,
-                        expectedDownloadChannel));
+                        expectedDownloadChannel,
+                        null));
 
         final var actualExceptionMessage = actualException.getMessage();
         final var actualErrors = actualException.getErrors();
@@ -80,7 +81,8 @@ public class FileTest {
                         expectedSize,
                         expectedChecksum,
                         expectedUploadChannel,
-                        expectedDownloadChannel));
+                        expectedDownloadChannel,
+                        null));
         assertEquals("'id' should not be null", actualException.getMessage());
 
     }
@@ -108,7 +110,8 @@ public class FileTest {
                         expectedSize,
                         expectedChecksum,
                         expectedUploadChannel,
-                        expectedDownloadChannel));
+                        expectedDownloadChannel,
+                        null));
 
         final var actualExceptionMessage = actualException.getMessage();
         final var actualErrors = actualException.getErrors();
@@ -143,7 +146,8 @@ public class FileTest {
                 expectedSize,
                 expectedChecksum,
                 expectedUploadChannel,
-                expectedDownloadChannel);
+                expectedDownloadChannel,
+                null);
 
         final var handler = Notification.create();
 
@@ -182,7 +186,8 @@ public class FileTest {
                 expectedSize,
                 expectedChecksum,
                 null,
-                expectedDownloadChannel);
+                expectedDownloadChannel,
+                null);
 
         assertTrue(expectedFile.getUploadChannel().isEmpty());
 
@@ -216,7 +221,8 @@ public class FileTest {
                 expectedSize,
                 expectedChecksum,
                 expectedUploadChannel,
-                expectedDownloadChannel);
+                expectedDownloadChannel,
+                null);
 
         assertTrue(expectedFile.getUploadChannel().isEmpty());
 
@@ -264,7 +270,8 @@ public class FileTest {
                 expectedSize,
                 expectedChecksum,
                 expectedUploadChannel,
-                expectedDownloadChannel);
+                expectedDownloadChannel,
+                null);
 
         assertTrue(expectedFile.getUploadChannel().isPresent());
 

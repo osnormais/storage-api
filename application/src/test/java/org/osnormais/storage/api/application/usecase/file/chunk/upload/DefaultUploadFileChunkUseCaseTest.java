@@ -88,6 +88,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileSize,
                 expectedFileChecksum,
                 expectedUploadTrasnferChannel,
+                null,
                 null);
 
         final var expectedConcurrencyTrackerCount = 0;
@@ -189,6 +190,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileSize,
                 expectedFileChecksum,
                 expectedUploadTrasnferChannel,
+                null,
                 null);
 
         final var expectedConcurrencyTrackerCount = 2;
@@ -254,6 +256,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileSize,
                 expectedFileChecksum,
                 expectedUploadTrasnferChannel,
+                null,
                 null);
 
         final var expectedExceptionMessage = "Trasnfer channel is not available.";
@@ -380,6 +383,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileSize,
                 expectedFileChecksum,
                 expectedUploadTrasnferChannel,
+                null,
                 null);
 
         final var expectedConcurrencyTrackerCount = 0;
