@@ -5,6 +5,6 @@ import java.util.Optional;
 @FunctionalInterface
 public interface DomainEventSource {
 
-    Optional<DomainEvent> nextEvent();
+    Optional<DomainEvent<?>> nextEvent();
 
 }

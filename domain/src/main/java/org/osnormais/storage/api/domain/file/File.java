@@ -30,7 +30,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
     private Optional<TransferChannel> uploadChannel;
     private Optional<TransferChannel> downloadChannel;
 
-    private final Queue<DomainEvent> events;
+    private final Queue<DomainEvent<?>> events;
 
     private File(
             final FileId id,
@@ -38,7 +38,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
             final Checksum checksum,
             final Optional<TransferChannel> uploadChannel,
             final Optional<TransferChannel> downloadChannel,
-            final Queue<DomainEvent> events) {
+            final Queue<DomainEvent<?>> events) {
         super(id);
         this.size = size;
         this.checksum = checksum;
@@ -56,7 +56,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
             final Checksum checksum,
             final TransferChannel uploadChannel,
             final TransferChannel downloadChannel,
-            final Queue<DomainEvent> events) {
+            final Queue<DomainEvent<?>> events) {
         return new File(
                 id,
                 size,
@@ -90,7 +90,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
     }
 
     @Override
-    public Optional<DomainEvent> nextEvent() {
+    public Optional<DomainEvent<?>> nextEvent() {
         return Optional.ofNullable(this.events.poll());
     }
 

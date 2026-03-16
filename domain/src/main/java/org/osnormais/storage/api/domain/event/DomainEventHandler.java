@@ -12,6 +12,6 @@ public abstract class DomainEventHandler {
         return eventKey;
     }
 
-    public abstract void handle(DomainEvent event);
+    public abstract void handle(DomainEvent<?> event);
 
 }

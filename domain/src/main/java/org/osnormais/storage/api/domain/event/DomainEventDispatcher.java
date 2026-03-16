@@ -13,7 +13,7 @@ public final class DomainEventDispatcher {
         this.handlers.computeIfAbsent(eventKey, k -> new ArrayList<>()).add(handler);
     }
 
-    public void unregister(final DomainEvent event, final DomainEventHandler handler) {
+    public void unregister(final DomainEvent<?> event, final DomainEventHandler handler) {
         this.handlers.computeIfPresent(event.key(), (k, v) -> {
             v.remove(handler);
             return v.isEmpty() ? null : v;
@@ -24,7 +24,7 @@ public final class DomainEventDispatcher {
         this.handlers.remove(eventKey);
     }
 
-    public void notify(final DomainEvent event) {
+    public void notify(final DomainEvent<?> event) {
         @SuppressWarnings("unchecked")
         final List<DomainEventHandler> handlers = (List<DomainEventHandler>) Optional
                 .ofNullable(this.handlers.get(event.key()))
