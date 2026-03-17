@@ -28,7 +28,7 @@ import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
-import org.osnormais.storage.api.domain.file.event.FileUploadTrasnferChannelCompletedEvent;
+import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum.Algorithm;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
@@ -53,13 +53,13 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
     DomainEventDispatcher eventDispatcher;
 
     @Test
-    void givenAnValidInput_whenFileHasUploadTrasnferChannel_thenShouldCompleteUploadTransferChannelAndNotifyEvent() {
+    void givenAnValidInput_whenFileHasUploadTransferChannel_thenShouldCompleteUploadTransferChannelAndNotifyEvent() {
 
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedFileId = FileId.of(expectedFileIdValue);
 
-        final var expectedEventType = FileUploadTrasnferChannelCompletedEvent.class;
-        final var expectedEventKey = FileUploadTrasnferChannelCompletedEvent.eventKey();
+        final var expectedEventType = FileUploadTransferChannelCompletedEvent.class;
+        final var expectedEventKey = FileUploadTransferChannelCompletedEvent.eventKey();
 
         final var expectedThroughputLimitBytesPerSecondValue = 1024L;
 
@@ -70,7 +70,7 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
                 Size.of(expectedChunkSpecificationSizeValue),
                 ParallelChunkLimit.of(expectedParallelChunkLimitValue));
 
-        final var uploadTrasnferChannel = TransferChannel.create(
+        final var uploadTransferChannel = TransferChannel.create(
                 ThroughputLimit.create(expectedThroughputLimitBytesPerSecondValue),
                 expectedChunkSpecification);
 
@@ -78,7 +78,7 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 Size.of(2048L),
                 Checksum.of(Algorithm.MD5, "checksumMD5"),
-                uploadTrasnferChannel,
+                uploadTransferChannel,
                 null,
                 null);
 

@@ -14,7 +14,7 @@ import org.osnormais.storage.api.domain.exception.DomainException;
 import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
-import org.osnormais.storage.api.domain.file.event.FileUploadTrasnferChannelCompletedEvent;
+import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
@@ -127,7 +127,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
             return this;
 
         this.uploadChannel = Optional.empty();
-        events.add(FileUploadTrasnferChannelCompletedEvent.create(this));
+        events.add(FileUploadTransferChannelCompletedEvent.create(this));
 
         return this;
 

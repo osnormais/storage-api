@@ -96,11 +96,11 @@ public final class FileSystemUtils {
             targetChannel.position(startPosition);
 
             Long inputSize = sourceChannel.size();
-            Long trasferredBytes = 0L;
-            while (trasferredBytes < inputSize) {
-                trasferredBytes += sourceChannel.transferTo(
-                        trasferredBytes,
-                        inputSize - trasferredBytes,
+            Long transferredBytes = 0L;
+            while (transferredBytes < inputSize) {
+                transferredBytes += sourceChannel.transferTo(
+                        transferredBytes,
+                        inputSize - transferredBytes,
                         targetChannel);
             }
 
