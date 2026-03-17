@@ -1,7 +1,6 @@
 package org.osnormais.storage.api.domain.event;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -25,13 +24,7 @@ public final class DomainEventDispatcher {
     }
 
     public void notify(final DomainEvent<?> event) {
-        @SuppressWarnings("unchecked")
-        final List<DomainEventHandler> handlers = (List<DomainEventHandler>) Optional
-                .ofNullable(this.handlers.get(event.key()))
-                .filter(h -> !h.isEmpty())
-                .map(h -> (List<DomainEventHandler>) (List<?>) h)
-                .orElse(List.of());
-
+        final List<DomainEventHandler> handlers = this.handlers.getOrDefault(event.key(), List.of());
         handlers.forEach(handler -> handler.handle(event));
     }
 
