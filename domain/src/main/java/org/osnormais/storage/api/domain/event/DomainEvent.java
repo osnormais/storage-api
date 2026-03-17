@@ -35,12 +35,12 @@ public abstract class DomainEvent<I extends Identifier<?>> {
     }
 
     protected static String key(
-            final Class<? extends Entity<?>> entity,
+            final Class<? extends Entity<?>> entityClass,
             final String subResource,
             final String action) {
         return DOMAIN
                 + "."
-                + DomainEvent.entity(entity.getClass(), subResource)
+                + DomainEvent.entity(entityClass, subResource)
                 + "."
                 + action;
     }
