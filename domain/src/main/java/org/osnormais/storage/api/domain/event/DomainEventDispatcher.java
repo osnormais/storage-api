@@ -1,16 +1,16 @@
 package org.osnormais.storage.api.domain.event;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class DomainEventDispatcher {
 
     private final ConcurrentHashMap<String, List<DomainEventHandler>> handlers = new ConcurrentHashMap<>();
 
     public void register(final String eventKey, final DomainEventHandler handler) {
-        this.handlers.computeIfAbsent(eventKey, k -> new ArrayList<>()).add(handler);
+        this.handlers.computeIfAbsent(eventKey, k -> new CopyOnWriteArrayList<>()).add(handler);
     }
 
     public void unregister(final DomainEvent<?> event, final DomainEventHandler handler) {
