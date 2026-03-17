@@ -3,7 +3,6 @@ package org.osnormais.storage.api.domain.event;
 import static java.util.Objects.isNull;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Set;
 
 import org.osnormais.storage.api.domain.Entity;
@@ -31,7 +30,7 @@ public abstract class DomainEvent<I extends Identifier<?>> {
         this.entity = DomainEvent.entity(entity.getClass(), subResource);
         this.action = action;
         this.occurredAt = occurredAt;
-        this.relatedEntities = relatedEntities;
+        this.relatedEntities = isNull(relatedEntities) ? Set.of() : Set.copyOf(relatedEntities);
     }
 
     protected static String key(
@@ -74,7 +73,7 @@ public abstract class DomainEvent<I extends Identifier<?>> {
     }
 
     public Set<DomainEventEntity> getRelatedEntities() {
-        return Objects.isNull(relatedEntities) ? Set.of() : Set.copyOf(relatedEntities);
+        return isNull(relatedEntities) ? Set.of() : Set.copyOf(relatedEntities);
     }
 
 }
