@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.osnormais.storage.api.application.exception.ChunkIntegrityViolationException;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
-import org.osnormais.storage.api.application.exception.TrasnferChannelNotAvailableException;
+import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.application.port.ChunkWriter;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
@@ -79,7 +79,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedChunkSpecificationSize,
                 expectedParallelChunkLimit);
 
-        final var expectedUploadTrasnferChannel = TransferChannel.create(
+        final var expectedUploadTransferChannel = TransferChannel.create(
                 expectedThroughputLimit,
                 expectedChunkSpecification);
 
@@ -87,12 +87,13 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedFileChecksum,
-                expectedUploadTrasnferChannel,
+                expectedUploadTransferChannel,
+                null,
                 null);
 
         final var expectedConcurrencyTrackerCount = 0;
 
-        final var chunkSize = expectedUploadTrasnferChannel
+        final var chunkSize = expectedUploadTransferChannel
                 .chunkSpecification()
                 .effectiveChunkSize(
                         expectedFileSize,
@@ -180,7 +181,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedChunkSpecificationSize,
                 expectedParallelChunkLimit);
 
-        final var expectedUploadTrasnferChannel = TransferChannel.create(
+        final var expectedUploadTransferChannel = TransferChannel.create(
                 expectedThroughputLimit,
                 expectedChunkSpecification);
 
@@ -188,7 +189,8 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedFileChecksum,
-                expectedUploadTrasnferChannel,
+                expectedUploadTransferChannel,
+                null,
                 null);
 
         final var expectedConcurrencyTrackerCount = 2;
@@ -231,7 +233,7 @@ public class DefaultUploadFileChunkUseCaseTest {
     }
 
     @Test
-    void givenValidArguments_whenFileDoesntHaveUploadTransferChannel_thenShouldTrasnferChannelNotAvailableException() {
+    void givenValidArguments_whenFileDoesntHaveUploadTransferChannel_thenShouldTransferChannelNotAvailableException() {
 
         final var expectedChunkIndex = 0L;
         final var expectedInputStream = InputStream.nullInputStream();
@@ -247,21 +249,22 @@ public class DefaultUploadFileChunkUseCaseTest {
         final var expectedFileSize = Size.of(expectedFileSizeInBytesValue);
         final var expectedFileChecksum = Checksum.of(expectedFileChecksumAlgorithm, expectedFileChecksumValue);
 
-        final TransferChannel expectedUploadTrasnferChannel = null;
+        final TransferChannel expectedUploadTransferChannel = null;
 
         final var expectedFile = File.with(
                 expectedFileId,
                 expectedFileSize,
                 expectedFileChecksum,
-                expectedUploadTrasnferChannel,
+                expectedUploadTransferChannel,
+                null,
                 null);
 
-        final var expectedExceptionMessage = "Trasnfer channel is not available.";
+        final var expectedExceptionMessage = "Transfer channel is not available.";
         final var expectedExceptionErrrosCount = 1;
         final var expectedExceptionErrrorMessage0 = "["
                 + "upload"
                 + "]"
-                + "Trasnfer channel of File=["
+                + "Transfer channel of File=["
                 + expectedFileId.getStringValue()
                 + "] is not available";
 
@@ -276,12 +279,12 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedChecksumValue);
 
         final var actualException = assertThrows(
-                TrasnferChannelNotAvailableException.class,
+                TransferChannelNotAvailableException.class,
                 () -> useCase.execute(input));
 
-        assertEquals(actualException.getMessage(), expectedExceptionMessage);
-        assertEquals(actualException.getErrors().size(), expectedExceptionErrrosCount);
-        assertEquals(actualException.getErrors().get(0).message(), expectedExceptionErrrorMessage0);
+        assertEquals(expectedExceptionMessage, actualException.getMessage());
+        assertEquals(expectedExceptionErrrosCount, actualException.getErrors().size());
+        assertEquals(expectedExceptionErrrorMessage0, actualException.getErrors().get(0).message());
 
         verify(fileQueryGateway, times(1)).findById(any());
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
@@ -371,7 +374,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedChunkSpecificationSize,
                 expectedParallelChunkLimit);
 
-        final var expectedUploadTrasnferChannel = TransferChannel.create(
+        final var expectedUploadTransferChannel = TransferChannel.create(
                 expectedThroughputLimit,
                 expectedChunkSpecification);
 
@@ -379,12 +382,13 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedFileChecksum,
-                expectedUploadTrasnferChannel,
+                expectedUploadTransferChannel,
+                null,
                 null);
 
         final var expectedConcurrencyTrackerCount = 0;
 
-        final var chunkSize = expectedUploadTrasnferChannel
+        final var chunkSize = expectedUploadTransferChannel
                 .chunkSpecification()
                 .effectiveChunkSize(
                         expectedFileSize,

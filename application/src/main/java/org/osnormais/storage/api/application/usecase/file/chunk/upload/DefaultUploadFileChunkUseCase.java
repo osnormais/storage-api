@@ -5,7 +5,7 @@ import java.io.InputStream;
 import org.osnormais.storage.api.application.exception.ChunkIntegrityViolationException;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
-import org.osnormais.storage.api.application.exception.TrasnferChannelNotAvailableException;
+import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.application.port.ChunkWriter;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
@@ -47,7 +47,7 @@ public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
 
         final TransferChannel uploadChannel = file
                 .getUploadChannel()
-                .orElseThrow(() -> TrasnferChannelNotAvailableException.upload(fileId));
+                .orElseThrow(() -> TransferChannelNotAvailableException.upload(fileId));
 
         final Size chunkSize = uploadChannel.chunkSpecification().effectiveChunkSize(file.getSize(), chunkIndex);
         final ParallelChunkLimit maxParallelChunks = uploadChannel.chunkSpecification().maxParallel();

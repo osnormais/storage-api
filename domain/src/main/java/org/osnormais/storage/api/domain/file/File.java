@@ -2,13 +2,19 @@ package org.osnormais.storage.api.domain.file;
 
 import static java.util.Objects.isNull;
 
+import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
 
 import org.osnormais.storage.api.domain.AggregateRoot;
+import org.osnormais.storage.api.domain.event.DomainEvent;
+import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.exception.DomainException;
 import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
+import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
@@ -16,7 +22,7 @@ import org.osnormais.storage.api.domain.validation.ValidationError;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
-public class File extends AggregateRoot<FileId> {
+public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     private final Size size;
     private final Checksum checksum;
@@ -24,17 +30,22 @@ public class File extends AggregateRoot<FileId> {
     private Optional<TransferChannel> uploadChannel;
     private Optional<TransferChannel> downloadChannel;
 
+    private final Queue<DomainEvent<?>> events;
+
     private File(
             final FileId id,
             final Size size,
             final Checksum checksum,
             final Optional<TransferChannel> uploadChannel,
-            final Optional<TransferChannel> downloadChannel) {
+            final Optional<TransferChannel> downloadChannel,
+            final Queue<DomainEvent<?>> events) {
         super(id);
         this.size = size;
         this.checksum = checksum;
         this.uploadChannel = uploadChannel;
         this.downloadChannel = downloadChannel;
+
+        this.events = Objects.isNull(events) ? new LinkedList<>() : new LinkedList<>(events);
 
         selfValidate();
     }
@@ -44,13 +55,15 @@ public class File extends AggregateRoot<FileId> {
             final Size size,
             final Checksum checksum,
             final TransferChannel uploadChannel,
-            final TransferChannel downloadChannel) {
+            final TransferChannel downloadChannel,
+            final Queue<DomainEvent<?>> events) {
         return new File(
                 id,
                 size,
                 checksum,
                 Optional.ofNullable(uploadChannel),
-                Optional.ofNullable(uploadChannel));
+                Optional.ofNullable(downloadChannel),
+                events);
     }
 
     @Override
@@ -76,6 +89,11 @@ public class File extends AggregateRoot<FileId> {
 
     }
 
+    @Override
+    public Optional<DomainEvent<?>> nextEvent() {
+        return Optional.ofNullable(this.events.poll());
+    }
+
     public static File create(
             final FileId id,
             final Size size,
@@ -85,7 +103,8 @@ public class File extends AggregateRoot<FileId> {
                 size,
                 checksum,
                 Optional.empty(),
-                Optional.empty());
+                Optional.empty(),
+                new LinkedList<>());
     }
 
     public File openUploadChannel(final TransferChannel transferChannel) {
@@ -97,6 +116,18 @@ public class File extends AggregateRoot<FileId> {
             throw UploadTransferChannelAlreadyOpennedException.create();
 
         this.uploadChannel = Optional.of(transferChannel);
+
+        return this;
+
+    }
+
+    public File completeUploadChannel() {
+
+        if (this.uploadChannel.isEmpty())
+            return this;
+
+        this.uploadChannel = Optional.empty();
+        events.add(FileUploadTransferChannelCompletedEvent.create(this));
 
         return this;
 

@@ -10,8 +10,11 @@ import org.osnormais.storage.api.application.usecase.file.chunk.upload.DefaultUp
 import org.osnormais.storage.api.application.usecase.file.chunk.upload.UploadFileChunkUseCase;
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileUseCase;
 import org.osnormais.storage.api.application.usecase.file.create.DefaultCreateFileUseCase;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.complete.CompleteFileUploadTransferChannelUseCase;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.complete.DefaultCompleteFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.DefaultCreateFileUploadTransferChannelUseCase;
+import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,16 +25,19 @@ public class FileUseCaseConfig {
     private final FileQueryGateway fileQueryGateway;
     private final ConcurrencyTracker.Port concurrencyTrackerPort;
     private final ChunkWriter chunkWriter;
+    private final DomainEventDispatcher domainEventDispatcher;
 
     public FileUseCaseConfig(
             final FileCommandGateway fileCommandGateway,
             final FileQueryGateway fileQueryGateway,
             final ConcurrencyTracker.Port concurrencyTrackerPort,
-            final ChunkWriter chunkWriter) {
+            final ChunkWriter chunkWriter,
+            final DomainEventDispatcher domainEventDispatcher) {
         this.fileCommandGateway = requireNonNull(fileCommandGateway);
         this.fileQueryGateway = requireNonNull(fileQueryGateway);
         this.concurrencyTrackerPort = requireNonNull(concurrencyTrackerPort);
         this.chunkWriter = requireNonNull(chunkWriter);
+        this.domainEventDispatcher = requireNonNull(domainEventDispatcher);
     }
 
     @Bean
@@ -50,6 +56,14 @@ public class FileUseCaseConfig {
                 fileQueryGateway,
                 new ConcurrencyTracker(concurrencyTrackerPort, "chunk-upload"),
                 chunkWriter);
+    }
+
+    @Bean
+    CompleteFileUploadTransferChannelUseCase completeFileUploadTransferChannelUseCase() {
+        return new DefaultCompleteFileUploadTransferChannelUseCase(
+                fileQueryGateway,
+                fileCommandGateway,
+                domainEventDispatcher);
     }
 
 }
