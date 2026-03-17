@@ -12,8 +12,8 @@ public final class DomainEventDispatcher {
         this.handlers.computeIfAbsent(eventKey, k -> new CopyOnWriteArrayList<>()).add(handler);
     }
 
-    public void unregister(final DomainEvent<?> event, final DomainEventHandler handler) {
-        this.handlers.computeIfPresent(event.key(), (k, v) -> {
+    public void unregister(final String eventKey, final DomainEventHandler handler) {
+        this.handlers.computeIfPresent(eventKey, (k, v) -> {
             v.remove(handler);
             return v.isEmpty() ? null : v;
         });
