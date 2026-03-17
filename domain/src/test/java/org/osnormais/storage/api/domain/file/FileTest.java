@@ -370,7 +370,7 @@ public class FileTest {
         assertTrue(actualFile.nextEvent().isEmpty());
 
     }
- 
+
     @Test
     void givenAnPopulatedUploadChannel_whenCallsCompleteUploadChannel_thenShouldCompleteChannel() {
 
