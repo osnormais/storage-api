@@ -62,7 +62,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 size,
                 checksum,
                 Optional.ofNullable(uploadChannel),
-                Optional.ofNullable(uploadChannel),
+                Optional.ofNullable(downloadChannel),
                 events);
     }
 
