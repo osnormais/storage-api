@@ -28,8 +28,7 @@ public abstract class DomainEvent<I extends Identifier<?>> {
             final Set<DomainEventEntity> relatedEntities) {
         this.identifier = entity.getId();
         this.domain = DOMAIN;
-        this.entity = (entity.getClass().getSimpleName() + (isNull(subResource) ? "" : ":" + subResource.trim()))
-                .toLowerCase();
+        this.entity = DomainEvent.entity(entity.getClass(), subResource);
         this.action = action;
         this.occurredAt = occurredAt;
         this.relatedEntities = relatedEntities;
@@ -41,10 +40,13 @@ public abstract class DomainEvent<I extends Identifier<?>> {
             final String action) {
         return DOMAIN
                 + "."
-                + (entity.getSimpleName() + (isNull(subResource) ? "" : ":" + subResource.trim()))
-                        .toLowerCase()
+                + DomainEvent.entity(entity.getClass(), subResource)
                 + "."
                 + action;
+    }
+
+    private static String entity(final Class<?> entityClass, final String subResource) {
+        return (entityClass.getSimpleName() + (isNull(subResource) ? "" : ":" + subResource.trim())).toLowerCase();
     }
 
     public String key() {
