@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
+import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
@@ -336,6 +337,76 @@ public class FileTest {
         assertEquals(actualException.getErrors().size(), expectedErrorCount);
         assertEquals(actualException.getErrors().get(0).message(), expectedErrorMessage0);
         assertEquals(actualException.getErrors().get(1).message(), expectedErrorMessage1);
+
+    }
+
+    @Test
+    void givenAnEmptyUploadChannel_whenCallsCompleteUploadChannel_thenShouldNotCompleteChannel() {
+
+        final var expectedIdValue = UUID.randomUUID();
+        final var expectedFileId = FileId.of(expectedIdValue);
+        final var expectedSize = new Size(2L);
+
+        final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
+        final var expectedChecksumValue = "123";
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
+
+        final TransferChannel expectedUploadChannel = null;
+        final TransferChannel expectedDownloadChannel = null;
+
+        final var expectedFile = File.with(
+                expectedFileId,
+                expectedSize,
+                expectedChecksum,
+                expectedUploadChannel,
+                expectedDownloadChannel,
+                null);
+
+        assertTrue(expectedFile.getUploadChannel().isEmpty());
+
+        final var actualFile = assertDoesNotThrow(() -> expectedFile.completeUploadChannel());
+
+        assertTrue(actualFile.getUploadChannel().isEmpty());
+        assertTrue(actualFile.nextEvent().isEmpty());
+
+    }
+ 
+    @Test
+    void givenAnPopulatedUploadChannel_whenCallsCompleteUploadChannel_thenShouldCompleteChannel() {
+
+        final var expectedIdValue = UUID.randomUUID();
+        final var expectedFileId = FileId.of(expectedIdValue);
+        final var expectedSize = new Size(2L);
+
+        final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
+        final var expectedChecksumValue = "123";
+        final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
+
+        final var expectedThroughputLimit = ThroughputLimit.create(100L);
+        final var expectedChunkSpecification = ChunkSpecification.create(Size.of(1024L), ParallelChunkLimit.of(2));
+
+        final var expectedUploadChannel = TransferChannel.create(
+                expectedThroughputLimit,
+                expectedChunkSpecification);
+        final TransferChannel expectedDownloadChannel = null;
+
+        final var expectedFile = File.with(
+                expectedFileId,
+                expectedSize,
+                expectedChecksum,
+                expectedUploadChannel,
+                expectedDownloadChannel,
+                null);
+
+        assertTrue(expectedFile.getUploadChannel().isPresent());
+
+        final var actualFile = assertDoesNotThrow(() -> expectedFile.completeUploadChannel());
+
+        final var actualEvent = actualFile.nextEvent();
+
+        assertTrue(actualFile.getUploadChannel().isEmpty());
+        assertTrue(actualEvent.isPresent());
+        assertTrue(actualEvent.get() instanceof FileUploadTransferChannelCompletedEvent);
 
     }
 
