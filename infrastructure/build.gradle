@@ -1,8 +1,7 @@
 plugins {
     id 'java-conventions'
     id 'application'
-    id 'org.springframework.boot' version '4.0.3'
-    id 'io.spring.dependency-management' version '1.1.7'
+    alias(libs.plugins.spring.boot)
 }
 
 bootJar {
@@ -10,10 +9,16 @@ bootJar {
     destinationDirectory = file("${rootProject.buildDir}/libs")
 }
 
+def gav = { group, name, versionRef ->
+    "${group}:${name}:${versionRef.get()}"
+}
+
 dependencies {
 
-    implementation(project(":domain"))
-    implementation(project(":application"))
+    implementation(project(':domain'))
+    implementation(project(':application'))
+
+    implementation platform(gav('org.springframework.boot', 'spring-boot-dependencies', libs.versions.spring.boot))
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
