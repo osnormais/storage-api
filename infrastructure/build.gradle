@@ -20,7 +20,7 @@ dependencies {
 
     implementation platform(gav('org.springframework.boot', 'spring-boot-dependencies', libs.versions.spring.boot))
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
 
