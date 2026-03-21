@@ -1,0 +1,52 @@
+spring:
+  cloud:
+    stream:
+      binders:
+        storage-binder:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: ${rabbitmq.host}
+                port: ${rabbitmq.port}
+                virtual-host: ${rabbitmq.virtual-host}
+                username: ${rabbitmq.username}
+                password: ${rabbitmq.password}
+      default-binder: storage-binder
+      rabbit:
+        bindings:
+          ## --------------------------------------- ##
+          #  File Upload Transfer Channel Completed   #
+          ## Outgoing RabbitMQ bindings ------------ ##
+          fileUploadTransferChannelCompleted-out-0:
+            producer:
+              exchangeType: topic
+              destination: storage.exchange
+              routingKeyExpression: "'storage.file:upload-transfer-channel.completed'"
+          fileUploadTransferChannelCompletedError-out-0:
+            producer:
+              exchangeType: topic
+              destination: storage.exchange.error
+              routingKeyExpression: "'storage.file:upload-transfer-channel.completed'"
+              queueNameGroupOnly: true
+          ## Incoming RabbitMQ bindings ------------ ##
+          fileUploadTransferChannelCompleted-in-0:
+            consumer:
+              exchangeType: topic
+              bindingRoutingKey: storage.file:upload-transfer-channel.completed
+              queueNameGroupOnly: true
+              autoBindDlq: true
+              deadLetterExchange: storage.exchange.wait
+              deadLetterQueueName: storage.file:upload-transfer-channel.completed.queue.wait
+              dlqDeadLetterExchange: storage.exchange
+              dlqDeadLetterRoutingKey: storage.file:upload-transfer-channel.completed
+              republishToDlq: false
+              dlqTtl: 5000
+          ## --------------------------------------- ##
+
+rabbitmq:
+  host: ${RABBITMQ_HOST:localhost}
+  port: ${RABBITMQ_PORT:5672}
+  virtual-host: ${RABBITMQ_VIRTUAL_HOST:/}
+  username: ${RABBITMQ_USERNAME:rabbitmq}
+  password: ${RABBITMQ_PASSWORD:rabbitmq}

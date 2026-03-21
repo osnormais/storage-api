@@ -3,6 +3,8 @@ server:
 spring:
   profiles:
     active:
+      - spring-cloud
+      - ${application.vendor.messaging}
       - ${application.vendor.concurrency-tracker}
       - ${application.vendor.database}
       - ${application.vendor.storage}
@@ -11,7 +13,13 @@ application:
   name: storage-api
   server:
     port: ${SERVER_PORT:8080}
+  messaging:
+    consumer:
+      file-upload-transfer-channel-completed:
+        concurrency: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_CONCURRENCY:1}
+        max-attempts: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_MAX_ATTEMPTS:5}
   vendor:
     concurrency-tracker: ${VENDOR_CONCURRENCY_TRACKER:inmemory}
     database: ${VENDOR_DATABASE:inmemory}
     storage: ${VENDOR_STORAGE:fs}
+    messaging: ${VENDOR_MESSAGING:rabbitmq}
