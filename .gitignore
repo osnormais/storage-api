@@ -12,4 +12,6 @@ bin
 
 .idea/
 
-data/
+/data/
+
+.env

@@ -1,0 +1,28 @@
+spring:
+  cloud:
+    function:
+      definition: fileUploadTransferChannelCompletedConsumer
+    stream:
+      function:
+        bindings:
+          fileUploadTransferChannelCompletedConsumer-in-0: fileUploadTransferChannelCompleted-in-0
+      default:
+        content-type: application/json
+      bindings:
+        ## --------------------------------------- ##
+        #  File Upload Transfer Channel Completed   #
+        ## Outgoing RabbitMQ bindings ------------ ##
+        fileUploadTransferChannelCompleted-out-0:
+          destination: storage.exchange
+        fileUploadTransferChannelCompletedError-out-0:
+          destination: storage.exchange.error
+          producer:
+            requiredGroups: storage.file:upload-transfer-channel.completed.queue.error
+        ## Incoming RabbitMQ bindings ------------ ##
+        fileUploadTransferChannelCompleted-in-0:
+          destination: storage.exchange
+          group: storage.file:upload-transfer-channel.completed.queue
+          consumer:
+            max-attempts: 1
+            concurrency: ${application.messaging.consumer.file-upload-transfer-channel-completed.concurrency}
+        ## --------------------------------------- ##
