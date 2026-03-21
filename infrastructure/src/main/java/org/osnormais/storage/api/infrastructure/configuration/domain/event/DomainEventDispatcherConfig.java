@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class DomainEventDispatcherConfig {
 
     @Bean
-    DomainEventDispatcher eventDispatcher(final List<DomainEventHandler> eventHandlers) {
+    DomainEventDispatcher eventDispatcher(final List<DomainEventHandler<?>> eventHandlers) {
         final var dispatcher = new DomainEventDispatcher();
         eventHandlers.forEach(handler -> dispatcher.register(handler.eventKey(), handler));
         return dispatcher;

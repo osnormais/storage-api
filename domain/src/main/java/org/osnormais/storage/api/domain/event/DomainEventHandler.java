@@ -1,6 +1,6 @@
 package org.osnormais.storage.api.domain.event;
 
-public abstract class DomainEventHandler {
+public abstract class DomainEventHandler<E extends DomainEvent<?>> {
 
     private final String eventKey;
 
@@ -12,6 +12,6 @@ public abstract class DomainEventHandler {
         return eventKey;
     }
 
-    public abstract void handle(DomainEvent<?> event);
+    public abstract void handle(E event);
 
 }
