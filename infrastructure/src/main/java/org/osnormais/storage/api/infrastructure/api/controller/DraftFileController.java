@@ -14,8 +14,12 @@ import org.osnormais.storage.api.application.usecase.file.transferchannel.upload
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelInput;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelOutput;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelUseCase;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.RetrieveFileUploadTransferChannelInput;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.RetrieveFileUploadTransferChannelOutput;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.RetrieveFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,16 +36,19 @@ public class DraftFileController {
 
     private final CreateFileUseCase createFileUseCase;
     private final CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase;
+    private final RetrieveFileUploadTransferChannelUseCase retrieveFileUploadTransferChannelUseCase;
     private final CompleteFileUploadTransferChannelUseCase completeFileUploadTransferChannelUseCase;
     private final UploadFileChunkUseCase uploadFileChunkUseCase;
 
     public DraftFileController(
             CreateFileUseCase createFileUseCase,
             CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase,
+            RetrieveFileUploadTransferChannelUseCase retrieveFileUploadTransferChannelUseCase,
             CompleteFileUploadTransferChannelUseCase completeFileUploadTransferChannelUseCase,
             UploadFileChunkUseCase uploadFileChunkUseCase) {
         this.createFileUseCase = createFileUseCase;
         this.createFileUploadTransferChannelUseCase = createFileUploadTransferChannelUseCase;
+        this.retrieveFileUploadTransferChannelUseCase = retrieveFileUploadTransferChannelUseCase;
         this.completeFileUploadTransferChannelUseCase = completeFileUploadTransferChannelUseCase;
         this.uploadFileChunkUseCase = uploadFileChunkUseCase;
     }
@@ -67,6 +74,14 @@ public class DraftFileController {
         return ResponseEntity
                 .ok()
                 .body(createFileUploadTransferChannelUseCase.execute(input));
+    }
+
+    @GetMapping("{fileId}/upload-transfer-channel")
+    public ResponseEntity<RetrieveFileUploadTransferChannelOutput> retrieveFileUploadTransferChannel(
+            @PathVariable UUID fileId) {
+        return ResponseEntity
+                .ok()
+                .body(retrieveFileUploadTransferChannelUseCase.execute(new RetrieveFileUploadTransferChannelInput(fileId)));
     }
 
     @PostMapping("upload-transfer-channel/complete")
