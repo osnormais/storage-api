@@ -118,6 +118,7 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void givenAInexistentFileId_whenCallsExecute_thenShouldThrowsNotFoundException() {
 
         final var expectedFileIdValue = UUID.randomUUID();
