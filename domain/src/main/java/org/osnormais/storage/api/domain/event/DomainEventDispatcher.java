@@ -29,7 +29,7 @@ public final class DomainEventDispatcher {
     public <I extends Identifier<?>> void notify(final DomainEvent<I> event) {
 
         this.handlers
-                .get(event.key())
+                .getOrDefault(event.key(), List.of())
                 .stream()
                 .filter(handler -> handler.eventKey().equals(event.key()))
                 .map(handler -> (DomainEventHandler<DomainEvent<I>>) handler)
