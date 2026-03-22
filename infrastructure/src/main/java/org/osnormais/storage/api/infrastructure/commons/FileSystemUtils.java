@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osnormais.storage.api.infrastructure.exception.InvalidArgumentException;
@@ -87,13 +89,10 @@ public final class FileSystemUtils {
     }
 
     public static void append(
-            final Long startPosition,
             final FileChannel targetChannel,
             final FileChannel sourceChannel) {
 
         try {
-
-            targetChannel.position(startPosition);
 
             Long inputSize = sourceChannel.size();
             Long transferredBytes = 0L;
@@ -108,6 +107,16 @@ public final class FileSystemUtils {
             throw UnexpectedException.with("Failed to append file channels.", e);
         }
 
+    }
+
+    public static Set<Path> listFiles(final Path directory) {
+        try (Stream<Path> walk = Files.walk(directory)) {
+            return walk
+                    .filter(Files::isRegularFile)
+                    .collect(Collectors.toSet());
+        } catch (IOException e) {
+            throw UnexpectedException.with("Failed to list files in directory: " + directory.toString(), e);
+        }
     }
 
 }

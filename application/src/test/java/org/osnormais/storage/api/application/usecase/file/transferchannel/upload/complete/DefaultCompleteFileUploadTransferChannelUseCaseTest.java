@@ -78,6 +78,7 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 Size.of(2048L),
                 Checksum.of(Algorithm.MD5, "checksumMD5"),
+                false,
                 uploadTransferChannel,
                 null,
                 null);

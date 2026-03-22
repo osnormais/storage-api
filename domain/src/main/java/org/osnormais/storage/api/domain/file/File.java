@@ -11,9 +11,11 @@ import org.osnormais.storage.api.domain.AggregateRoot;
 import org.osnormais.storage.api.domain.event.DomainEvent;
 import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.exception.DomainException;
+import org.osnormais.storage.api.domain.exception.FileUploadInProgressException;
 import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
+import org.osnormais.storage.api.domain.file.event.FilePublishedEvent;
 import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
@@ -26,6 +28,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     private final Size size;
     private final Checksum checksum;
+    private Boolean published;
 
     private Optional<TransferChannel> uploadChannel;
     private Optional<TransferChannel> downloadChannel;
@@ -36,12 +39,14 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
             final FileId id,
             final Size size,
             final Checksum checksum,
+            final Boolean published,
             final Optional<TransferChannel> uploadChannel,
             final Optional<TransferChannel> downloadChannel,
             final Queue<DomainEvent<?>> events) {
         super(id);
         this.size = size;
         this.checksum = checksum;
+        this.published = published;
         this.uploadChannel = uploadChannel;
         this.downloadChannel = downloadChannel;
 
@@ -54,6 +59,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
             final FileId id,
             final Size size,
             final Checksum checksum,
+            final Boolean published,
             final TransferChannel uploadChannel,
             final TransferChannel downloadChannel,
             final Queue<DomainEvent<?>> events) {
@@ -61,6 +67,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 id,
                 size,
                 checksum,
+                published,
                 Optional.ofNullable(uploadChannel),
                 Optional.ofNullable(downloadChannel),
                 events);
@@ -102,6 +109,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 id,
                 size,
                 checksum,
+                false,
                 Optional.empty(),
                 Optional.empty(),
                 new LinkedList<>());
@@ -133,6 +141,21 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     }
 
+    public File publish() {
+
+        if (published)
+            return this;
+
+        if (this.uploadChannel.isPresent())
+            throw FileUploadInProgressException.create(this);
+
+        this.published = true;
+        events.add(FilePublishedEvent.create(this));
+
+        return this;
+
+    }
+
     private void selfValidate() {
         final Notification notification = Notification.create();
         validate(notification);
@@ -146,6 +169,10 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     public Checksum getChecksum() {
         return checksum;
+    }
+
+    public Boolean getPublished() {
+        return published;
     }
 
     public Optional<TransferChannel> getUploadChannel() {
