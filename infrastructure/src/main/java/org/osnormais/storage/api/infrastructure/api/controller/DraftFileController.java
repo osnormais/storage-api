@@ -78,10 +78,10 @@ public class DraftFileController {
 
     @GetMapping("{fileId}/upload-transfer-channel")
     public ResponseEntity<RetrieveFileUploadTransferChannelOutput> retrieveFileUploadTransferChannel(
-            @PathVariable UUID fileId) {
+            @RequestBody RetrieveFileUploadTransferChannelInput input) {
         return ResponseEntity
                 .ok()
-                .body(retrieveFileUploadTransferChannelUseCase.execute(new RetrieveFileUploadTransferChannelInput(fileId)));
+                .body(retrieveFileUploadTransferChannelUseCase.execute(input));
     }
 
     @PostMapping("upload-transfer-channel/complete")
