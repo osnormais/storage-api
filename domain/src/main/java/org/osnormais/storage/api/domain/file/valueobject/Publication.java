@@ -1,6 +1,7 @@
 package org.osnormais.storage.api.domain.file.valueobject;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -31,12 +32,13 @@ public record Publication(
         if (isNull(status))
             handler.append(new ValidationError("Publication.status should not be null"));
 
-        if (isNull(error) && Status.ERROR.equals(status))
-            handler.append(new ValidationError("Publication.error should not be null when status is ERROR"));
-        else if (Status.ERROR.equals(status))
+        if (nonNull(error))
             error.ifPresent(e -> e.validate(handler));
 
-        if (Status.OK.equals(status) && error.isPresent())
+        if ((isNull(error) || error.isEmpty()) && Status.ERROR.equals(status))
+            handler.append(new ValidationError("Publication.error should not be null when status is ERROR"));
+
+        if (nonNull(error) && error.isPresent() && Status.OK.equals(status))
             handler.append(new ValidationError("Publication.error should be empty when status is OK"));
 
     }
@@ -57,7 +59,7 @@ public record Publication(
             if (isNull(message))
                 handler.append(new ValidationError("Publication.Error.message should not be null"));
 
-            if (!isNull(message) && message.isBlank())
+            if (nonNull(message) && message.isBlank())
                 handler.append(new ValidationError("Publication.Error.message should not be blank"));
 
         }
