@@ -7,6 +7,7 @@ import static org.osnormais.storage.api.infrastructure.commons.InputStreamUtils.
 
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -62,9 +63,10 @@ public class FileSystemStorageService implements StorageService {
     public void assemble(final StorageKey key, final Long fileSize) {
 
         final StorageKey finalFileKey = key.subKey("data");
+        final StorageKey chunksKey = key.subKey("upload", "chunks");
 
         final Set<SequentialIterator.Item<Path>> items = FileSystemUtils
-                .listFiles(toPath(key))
+                .listFiles(toPath(chunksKey))
                 .stream()
                 .map(chunkPath -> SequentialIterator.Item
                         .of(chunkPath, Long.valueOf(chunkPath.getFileName().toString())))
@@ -75,11 +77,16 @@ public class FileSystemStorageService implements StorageService {
         try (final FileChannel outputChannel = FileSystemUtils.openChannel(
                 toPath(finalFileKey),
                 StandardOpenOption.CREATE,
-                StandardOpenOption.APPEND)) {
+                StandardOpenOption.WRITE)) {
 
             while (iterator.hasNext()) {
 
+                final Long chunkPosition = iterator.currentPosition();
                 final Path chunkPath = iterator.next();
+                final Long chunkSize = Files.size(chunkPath);
+                final Long offset = calculateOffset(chunkSize, chunkPosition, fileSize);
+
+                outputChannel.position(offset);
 
                 if (!FileSystemUtils.exists(chunkPath))
                     continue;
@@ -130,6 +137,15 @@ public class FileSystemStorageService implements StorageService {
 
     private Path toPath(final StorageKey storageKey) {
         return rootLocation.resolve(storageKey.getFullKey());
+    }
+
+    private static Long calculateOffset(final Long chunkSize, final Long chunkIndex, final Long fileSize) {
+
+        if (fileSize - ((chunkIndex * chunkSize) + chunkSize) == 0)
+            return fileSize - chunkSize;
+
+        return chunkIndex * chunkSize;
+
     }
 
     private static void write(
