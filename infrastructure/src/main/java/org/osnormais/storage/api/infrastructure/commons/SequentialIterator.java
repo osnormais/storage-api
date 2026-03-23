@@ -2,6 +2,7 @@ package org.osnormais.storage.api.infrastructure.commons;
 
 import static java.util.Objects.isNull;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +21,6 @@ public final class SequentialIterator<T> implements Iterator<T> {
 
         validate(items);
 
-        this.actualPosition = new AtomicLong(0L);
         this.items = new ConcurrentHashMap<>(
                 items
                         .stream()
@@ -28,6 +28,13 @@ public final class SequentialIterator<T> implements Iterator<T> {
                                 .toMap(
                                         item -> item.position,
                                         item -> item.value)));
+
+        this.actualPosition = new AtomicLong(
+                items
+                        .stream()
+                        .map(Item::position)
+                        .min(Comparator.naturalOrder())
+                        .orElse(0L));
 
     }
 
