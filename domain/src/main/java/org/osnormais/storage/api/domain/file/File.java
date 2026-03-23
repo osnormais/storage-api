@@ -12,9 +12,10 @@ import org.osnormais.storage.api.domain.event.DomainEvent;
 import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.exception.DomainException;
 import org.osnormais.storage.api.domain.exception.FileAlreadyPublishedException;
+import org.osnormais.storage.api.domain.exception.FileNotYetPublished;
 import org.osnormais.storage.api.domain.exception.FileUploadInProgressException;
 import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
-import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
+import org.osnormais.storage.api.domain.exception.TransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.event.FilePublishFailedEvent;
 import org.osnormais.storage.api.domain.file.event.FilePublishedEvent;
@@ -119,6 +120,23 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 new LinkedList<>());
     }
 
+    public File openDownloadChannel(final TransferChannel transferChannel) {
+
+        if (isNull(transferChannel))
+            throw InvalidArgumentException.with(DomainException.Error.with("'transferChannel' should not be null"));
+
+        if (!isPublished())
+            throw FileNotYetPublished.create(this);
+
+        if (downloadChannel.isPresent())
+            throw TransferChannelAlreadyOpennedException.create();
+
+        this.downloadChannel = Optional.of(transferChannel);
+
+        return this;
+
+    }
+
     public File openUploadChannel(final TransferChannel transferChannel) {
 
         if (isNull(transferChannel))
@@ -128,7 +146,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
             throw FileAlreadyPublishedException.create(this);
 
         if (this.uploadChannel.isPresent())
-            throw UploadTransferChannelAlreadyOpennedException.create();
+            throw TransferChannelAlreadyOpennedException.create();
 
         this.uploadChannel = Optional.of(transferChannel);
 

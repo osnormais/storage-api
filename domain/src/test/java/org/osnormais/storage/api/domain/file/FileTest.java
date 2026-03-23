@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.osnormais.storage.api.domain.exception.FileAlreadyPublishedException;
 import org.osnormais.storage.api.domain.exception.FileUploadInProgressException;
 import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
-import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
+import org.osnormais.storage.api.domain.exception.TransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.event.FilePublishFailedEvent;
 import org.osnormais.storage.api.domain.file.event.FilePublishedEvent;
@@ -335,9 +335,9 @@ class FileTest {
         @Test
         void givenValidTransferChannel_whenCallsOpenUploadChannelWithAlreadyOpenChannel_thenShouldThrowsUploadTransferChannelAlreadyOpennedException() {
 
-            final var expectedExceptionMessage = "Upload transfer channel already open";
+            final var expectedExceptionMessage = "Transfer channel already open";
             final var expectedErrorsCount = 1;
-            final var expectedErrorMessage = "Upload transfer channel already open, please close the current channel before opening a new one";
+            final var expectedErrorMessage = "Transfer channel already open, please close the current channel before opening a new one";
 
             final var expectedIdValue = UUID.randomUUID();
             final var expectedFileId = FileId.of(expectedIdValue);
@@ -370,7 +370,7 @@ class FileTest {
             assertTrue(expectedFile.getUploadChannel().isPresent());
 
             final var actualException = assertThrows(
-                    UploadTransferChannelAlreadyOpennedException.class,
+                    TransferChannelAlreadyOpennedException.class,
                     () -> expectedFile.openUploadChannel(expectedUploadChannel));
 
             final var actualExceptionMessage = actualException.getMessage();

@@ -171,7 +171,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
 
         final var expectedExceptionMessage = "Failed to open upload transfer channel";
         final var expectedErrorsCount = 1;
-        final var expectedErrorMessage = "Upload transfer channel already open, please close the current channel before opening a new one";
+        final var expectedErrorMessage = "Transfer channel already open, please close the current channel before opening a new one";
 
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedThroughputBytesLimitValue = 1024L;
