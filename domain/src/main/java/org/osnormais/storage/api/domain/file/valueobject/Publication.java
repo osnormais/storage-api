@@ -57,7 +57,7 @@ public record Publication(
             if (isNull(message))
                 handler.append(new ValidationError("Publication.Error.message should not be null"));
 
-            if (message.isBlank())
+            if (!isNull(message) && message.isBlank())
                 handler.append(new ValidationError("Publication.Error.message should not be blank"));
 
         }
