@@ -13,6 +13,8 @@ import org.osnormais.storage.api.application.usecase.file.create.CreateFileUseCa
 import org.osnormais.storage.api.application.usecase.file.create.DefaultCreateFileUseCase;
 import org.osnormais.storage.api.application.usecase.file.finalize.DefaultFinalizeFileUseCase;
 import org.osnormais.storage.api.application.usecase.file.finalize.FinalizeFileUseCase;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.download.create.CreateFileDownloadTransferChannelUseCase;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.download.create.DefaultCreateFileDownloadTransferChannelUseCase;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.complete.CompleteFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.complete.DefaultCompleteFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelUseCase;
@@ -79,6 +81,13 @@ public class FileUseCaseConfig {
                 fileCommandGateway,
                 fileFinalizer,
                 domainEventDispatcher);
+    }
+
+    @Bean
+    CreateFileDownloadTransferChannelUseCase createFileDownloadTransferChannelUseCase() {
+        return new DefaultCreateFileDownloadTransferChannelUseCase(
+                fileQueryGateway,
+                fileCommandGateway);
     }
 
 }
