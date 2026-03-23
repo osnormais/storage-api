@@ -83,13 +83,14 @@ public class FileSystemStorageService implements StorageService {
 
                 final Long chunkPosition = iterator.currentPosition();
                 final Path chunkPath = iterator.next();
+
+                if (!FileSystemUtils.exists(chunkPath))
+                    continue;
+
                 final Long chunkSize = Files.size(chunkPath);
                 final Long offset = calculateOffset(chunkSize, chunkPosition, fileSize);
 
                 outputChannel.position(offset);
-
-                if (!FileSystemUtils.exists(chunkPath))
-                    continue;
 
                 try (final FileChannel inputChannel = FileSystemUtils.openChannel(chunkPath, StandardOpenOption.READ)) {
                     FileSystemUtils.append(outputChannel, inputChannel);
