@@ -1,7 +1,11 @@
 package org.osnormais.storage.api.infrastructure.messaging.consumer.rabbitmq.file;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Set;
 
+import org.osnormais.storage.api.application.usecase.file.finalize.FinalizeFileInput;
+import org.osnormais.storage.api.application.usecase.file.finalize.FinalizeFileUseCase;
 import org.osnormais.storage.api.infrastructure.file.data.message.FileUploadTransferChannelCompletedMessage;
 import org.osnormais.storage.api.infrastructure.messaging.consumer.rabbitmq.RabbitMQMessageConsumer;
 import org.osnormais.storage.api.infrastructure.messaging.producer.MessageProducer;
@@ -10,15 +14,22 @@ import org.springframework.messaging.Message;
 public class FileUploadTransferChannelCompletedConsumer
         extends RabbitMQMessageConsumer<FileUploadTransferChannelCompletedMessage> {
 
+    private final FinalizeFileUseCase finalizeFileUseCase;
+
     public FileUploadTransferChannelCompletedConsumer(
             final Long maxRetryAttempts,
-            final MessageProducer<FileUploadTransferChannelCompletedMessage> errorMessageProducer) {
+            final MessageProducer<FileUploadTransferChannelCompletedMessage> errorMessageProducer,
+            final FinalizeFileUseCase finalizeFileUseCase) {
         super(maxRetryAttempts, errorMessageProducer, Set.of());
+        this.finalizeFileUseCase = requireNonNull(finalizeFileUseCase);
     }
 
     @Override
     public void consume(final Message<FileUploadTransferChannelCompletedMessage> message) {
-        System.out.println("Received message: " + message.getPayload());
+
+        finalizeFileUseCase
+                .execute(new FinalizeFileInput(message.getPayload().fileId()));
+
     }
 
 }

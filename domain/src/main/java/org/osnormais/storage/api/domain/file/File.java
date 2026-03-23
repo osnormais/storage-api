@@ -11,11 +11,16 @@ import org.osnormais.storage.api.domain.AggregateRoot;
 import org.osnormais.storage.api.domain.event.DomainEvent;
 import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.exception.DomainException;
+import org.osnormais.storage.api.domain.exception.FileAlreadyPublishedException;
+import org.osnormais.storage.api.domain.exception.FileUploadInProgressException;
 import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.exception.UploadTransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
+import org.osnormais.storage.api.domain.file.event.FilePublishFailedEvent;
+import org.osnormais.storage.api.domain.file.event.FilePublishedEvent;
 import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
+import org.osnormais.storage.api.domain.file.valueobject.Publication;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 import org.osnormais.storage.api.domain.validation.ValidationError;
@@ -26,6 +31,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     private final Size size;
     private final Checksum checksum;
+    private Optional<Publication> publication;
 
     private Optional<TransferChannel> uploadChannel;
     private Optional<TransferChannel> downloadChannel;
@@ -36,12 +42,14 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
             final FileId id,
             final Size size,
             final Checksum checksum,
+            final Optional<Publication> publication,
             final Optional<TransferChannel> uploadChannel,
             final Optional<TransferChannel> downloadChannel,
             final Queue<DomainEvent<?>> events) {
         super(id);
         this.size = size;
         this.checksum = checksum;
+        this.publication = publication;
         this.uploadChannel = uploadChannel;
         this.downloadChannel = downloadChannel;
 
@@ -54,6 +62,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
             final FileId id,
             final Size size,
             final Checksum checksum,
+            final Publication publication,
             final TransferChannel uploadChannel,
             final TransferChannel downloadChannel,
             final Queue<DomainEvent<?>> events) {
@@ -61,6 +70,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 id,
                 size,
                 checksum,
+                Optional.ofNullable(publication),
                 Optional.ofNullable(uploadChannel),
                 Optional.ofNullable(downloadChannel),
                 events);
@@ -84,6 +94,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         else
             checksum.validate(handler);
 
+        publication.ifPresent(publication -> publication.validate(handler));
         uploadChannel.ifPresent(uploadChannel -> uploadChannel.validate(handler));
         downloadChannel.ifPresent(downloadChannel -> downloadChannel.validate(handler));
 
@@ -104,6 +115,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 checksum,
                 Optional.empty(),
                 Optional.empty(),
+                Optional.empty(),
                 new LinkedList<>());
     }
 
@@ -111,6 +123,9 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
         if (isNull(transferChannel))
             throw InvalidArgumentException.with(DomainException.Error.with("'transferChannel' should not be null"));
+
+        if (isPublished())
+            throw FileAlreadyPublishedException.create(this);
 
         if (this.uploadChannel.isPresent())
             throw UploadTransferChannelAlreadyOpennedException.create();
@@ -133,6 +148,60 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     }
 
+    public Boolean isPublished() {
+        return this.publication
+                .map(Publication::status)
+                .filter(status -> Publication.Status.OK.equals(status))
+                .isPresent();
+    }
+
+    public File validateCanBeFinalized() {
+
+        if (this.uploadChannel.isPresent())
+            throw FileUploadInProgressException.create(this);
+
+        return this;
+    }
+
+    public File finalizePublication(final Checksum checksum) {
+
+        if (isNull(checksum))
+            throw InvalidArgumentException.with(DomainException.Error.with("'checksum' should not be null"));
+
+        validateCanBeFinalized();
+
+        if (this.checksum.equals(checksum))
+            completePublication();
+        else
+            failPublication(
+                    Publication.Error.of(
+                            "File integrity compromised during finalization. Expected checksum: %s, actual checksum: %s"
+                                    .formatted(this.checksum, checksum)));
+
+        return this;
+
+    }
+
+    private void completePublication() {
+
+        if (isPublished())
+            return;
+
+        this.publication = Optional.of(Publication.ok());
+        events.add(FilePublishedEvent.create(this));
+
+    }
+
+    private void failPublication(final Publication.Error error) {
+
+        if (isPublished())
+            throw FileAlreadyPublishedException.create(this);
+
+        this.publication = Optional.of(Publication.error(error));
+        events.add(FilePublishFailedEvent.create(this));
+
+    }
+
     private void selfValidate() {
         final Notification notification = Notification.create();
         validate(notification);
@@ -146,6 +215,10 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     public Checksum getChecksum() {
         return checksum;
+    }
+
+    public Optional<Publication> getPublication() {
+        return publication;
     }
 
     public Optional<TransferChannel> getUploadChannel() {

@@ -1,10 +1,9 @@
-package org.osnormais.storage.api.application.usecase.file.transferchannel.upload.complete;
+package org.osnormais.storage.api.application.usecase.file.finalize;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -23,25 +22,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
-import org.osnormais.storage.api.domain.event.DomainEvent;
+import org.osnormais.storage.api.application.port.FileFinalizer;
 import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
-import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
-import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
+import org.osnormais.storage.api.domain.file.event.FilePublishedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum.Algorithm;
-import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
-import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
+import org.osnormais.storage.api.domain.file.valueobject.Publication;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
-import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 
 @ExtendWith(MockitoExtension.class)
-public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
+public class DefaultFinalizeFileUseCaseTest {
 
     @InjectMocks
-    DefaultCompleteFileUploadTransferChannelUseCase useCase;
+    DefaultFinalizeFileUseCase useCase;
 
     @Mock
     FileQueryGateway fileQueryGateway;
@@ -50,34 +46,27 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
     FileCommandGateway fileCommandGateway;
 
     @Mock
+    FileFinalizer fileFinalizer;
+
+    @Mock
     DomainEventDispatcher eventDispatcher;
 
     @Test
-    void givenAnValidInput_whenFileHasUploadTransferChannel_thenShouldCompleteUploadTransferChannelAndNotifyEvent() {
+    void givenAnValidInput_whenCallsExecute_thenShouldFinalizeFileAndNotifyEvent() {
 
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedFileId = FileId.of(expectedFileIdValue);
+        final var expectedFileChecksum = Checksum.of(Algorithm.MD5, "checksumMD5");
 
-        final var expectedEventType = FileUploadTransferChannelCompletedEvent.class;
-        final var expectedEventKey = FileUploadTransferChannelCompletedEvent.eventKey();
+        final var expectedEventType = FilePublishedEvent.class;
+        final var expectedEventKey = FilePublishedEvent.eventKey();
 
-        final var expectedThroughputLimitBytesPerSecondValue = 1024L;
-
-        final var expectedChunkSpecificationSizeValue = 100L;
-        final var expectedParallelChunkLimitValue = 2;
-
-        final var expectedChunkSpecification = ChunkSpecification.create(
-                Size.of(expectedChunkSpecificationSizeValue),
-                ParallelChunkLimit.of(expectedParallelChunkLimitValue));
-
-        final var uploadTransferChannel = TransferChannel.create(
-                ThroughputLimit.create(expectedThroughputLimitBytesPerSecondValue),
-                expectedChunkSpecification);
+        final TransferChannel uploadTransferChannel = null;
 
         final var expectedFile = File.with(
                 expectedFileId,
                 Size.of(2048L),
-                Checksum.of(Algorithm.MD5, "checksumMD5"),
+                expectedFileChecksum,
                 null,
                 uploadTransferChannel,
                 null,
@@ -87,13 +76,16 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
                 .thenReturn(Optional.of(expectedFile));
 
         when(fileCommandGateway.update(expectedFile))
-                .thenAnswer(returnsFirstArg());
+                .thenReturn(expectedFile);
+
+        when(fileFinalizer.finalize(expectedFile))
+                .thenReturn(expectedFileChecksum);
 
         doNothing()
                 .when(eventDispatcher)
                 .notify(expectedFile);
 
-        final var input = new CompleteFileUploadTransferChannelInput(expectedFileIdValue);
+        final var input = new FinalizeFileInput(expectedFileIdValue);
 
         assertDoesNotThrow(() -> useCase.execute(input));
 
@@ -119,23 +111,67 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    void givenAInexistentFileId_whenCallsExecute_thenShouldThrowsNotFoundException() {
+    void givenANonExistentFileId_whenCallsExecuteWithPublishedFile_thenShouldThrowsNotFoundException() {
 
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedFileId = FileId.of(expectedFileIdValue);
 
+        final var expectedExcpetionMessage = "[%s] not found".formatted(File.class.getSimpleName());
+        final var expectedErrorsCount = 1;
+        final var expectedExceptionErrorMessage0 = "[%s] with id [%s] not found"
+                .formatted(
+                        File.class.getSimpleName(),
+                        expectedFileIdValue.toString());
+
         when(fileQueryGateway.findById(expectedFileId))
                 .thenReturn(Optional.empty());
 
-        final var input = new CompleteFileUploadTransferChannelInput(expectedFileIdValue);
+        final var input = new FinalizeFileInput(expectedFileIdValue);
 
-        assertThrows(NotFoundException.class, () -> useCase.execute(input));
+        final var actualException = assertThrows(NotFoundException.class, () -> useCase.execute(input));
+
+        assertEquals(expectedExcpetionMessage, actualException.getMessage());
+        assertEquals(expectedErrorsCount, actualException.getErrors().size());
+        assertEquals(expectedExceptionErrorMessage0, actualException.getErrors().get(0).message());
 
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
+        verify(fileQueryGateway, times(1)).findById(any());
         verify(fileCommandGateway, times(0)).update(any());
-        verify(eventDispatcher, times(0)).notify(any(DomainEventSource.class));
-        verify(eventDispatcher, times(0)).notify(any(DomainEvent.class));
+        verify(fileFinalizer, times(0)).finalize(any());
+        verify(eventDispatcher, times(0)).notify(any(File.class));
+
+    }
+
+    @Test
+    void givenAnValidInput_whenCallsExecuteWithPublishedFile_thenShouldNothing() {
+
+        final var expectedFileIdValue = UUID.randomUUID();
+        final var expectedFileId = FileId.of(expectedFileIdValue);
+        final var expectedFileChecksum = Checksum.of(Algorithm.MD5, "checksumMD5");
+
+        final TransferChannel uploadTransferChannel = null;
+
+        final var expectedFile = File.with(
+                expectedFileId,
+                Size.of(2048L),
+                expectedFileChecksum,
+                Publication.ok(),
+                uploadTransferChannel,
+                null,
+                null);
+
+        when(fileQueryGateway.findById(expectedFileId))
+                .thenReturn(Optional.of(expectedFile));
+
+        final var input = new FinalizeFileInput(expectedFileIdValue);
+
+        assertDoesNotThrow(() -> useCase.execute(input));
+
+        verify(fileQueryGateway, times(1)).findById(expectedFileId);
+        verify(fileQueryGateway, times(1)).findById(any());
+        verify(fileCommandGateway, times(0)).update(any());
+        verify(fileFinalizer, times(0)).finalize(any());
+        verify(eventDispatcher, times(0)).notify(any(File.class));
 
     }
 

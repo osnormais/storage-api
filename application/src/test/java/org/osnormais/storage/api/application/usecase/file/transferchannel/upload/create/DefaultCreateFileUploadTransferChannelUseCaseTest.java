@@ -75,6 +75,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 expectedCheckcum,
                 null,
                 null,
+                null,
                 null);
 
         when(fileQueryGateway.findById(eq(expectedFileId)))
@@ -197,6 +198,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedCheckcum,
+                null,
                 transferChannel,
                 null,
                 null);

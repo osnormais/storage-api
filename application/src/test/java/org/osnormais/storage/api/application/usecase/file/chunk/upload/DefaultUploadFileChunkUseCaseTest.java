@@ -87,6 +87,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedFileChecksum,
+                null,
                 expectedUploadTransferChannel,
                 null,
                 null);
@@ -189,6 +190,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedFileChecksum,
+                null,
                 expectedUploadTransferChannel,
                 null,
                 null);
@@ -255,6 +257,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedFileChecksum,
+                null,
                 expectedUploadTransferChannel,
                 null,
                 null);
@@ -382,6 +385,7 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedFileChecksum,
+                null,
                 expectedUploadTransferChannel,
                 null,
                 null);
