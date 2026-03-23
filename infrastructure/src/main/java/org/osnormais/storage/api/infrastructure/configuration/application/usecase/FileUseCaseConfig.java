@@ -77,7 +77,8 @@ public class FileUseCaseConfig {
         return new DefaultFinalizeFileUseCase(
                 fileQueryGateway,
                 fileCommandGateway,
-                fileFinalizer);
+                fileFinalizer,
+                domainEventDispatcher);
     }
 
 }

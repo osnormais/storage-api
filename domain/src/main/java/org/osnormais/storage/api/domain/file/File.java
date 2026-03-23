@@ -148,40 +148,58 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     }
 
-    public File completePublication() {
-
-        if (isPublished())
-            return this;
-
-        if (this.uploadChannel.isPresent())
-            throw FileUploadInProgressException.create(this);
-
-        this.publication = Optional.of(Publication.ok());
-        events.add(FilePublishedEvent.create(this));
-
-        return this;
-
-    }
-
-    public File failPublication(final Publication.Error error) {
-
-        if (isPublished())
-            throw FileAlreadyPublishedException.create(this);
-
-        if (this.uploadChannel.isPresent())
-            throw FileUploadInProgressException.create(this);
-
-        this.publication = Optional.of(Publication.error(error));
-        events.add(FilePublishFailedEvent.create(this));
-
-        return this;
-    }
-
     public Boolean isPublished() {
         return this.publication
                 .map(Publication::status)
                 .filter(status -> Publication.Status.OK.equals(status))
                 .isPresent();
+    }
+
+    public File validateCanBeFinalized() {
+
+        if (this.uploadChannel.isPresent())
+            throw FileUploadInProgressException.create(this);
+
+        return this;
+    }
+
+    public File finalizePublication(final Checksum checksum) {
+
+        if (isNull(checksum))
+            throw InvalidArgumentException.with(DomainException.Error.with("'checksum' should not be null"));
+
+        validateCanBeFinalized();
+
+        if (this.checksum.equals(checksum))
+            completePublication();
+        else
+            failPublication(
+                    Publication.Error.of(
+                            "File integrity compromised during finalization. Expected checksum: %s, actual checksum: %s"
+                                    .formatted(this.checksum, checksum)));
+
+        return this;
+
+    }
+
+    private void completePublication() {
+
+        if (isPublished())
+            return;
+
+        this.publication = Optional.of(Publication.ok());
+        events.add(FilePublishedEvent.create(this));
+
+    }
+
+    private void failPublication(final Publication.Error error) {
+
+        if (isPublished())
+            throw FileAlreadyPublishedException.create(this);
+
+        this.publication = Optional.of(Publication.error(error));
+        events.add(FilePublishFailedEvent.create(this));
+
     }
 
     private void selfValidate() {

@@ -6,7 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.osnormais.storage.api.domain.Identifier;
 
-public final class DomainEventDispatcher {
+public class DomainEventDispatcher {
 
     private final ConcurrentHashMap<String, List<DomainEventHandler<?>>> handlers = new ConcurrentHashMap<>();
 
