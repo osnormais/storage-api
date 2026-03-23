@@ -35,6 +35,28 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
+    public InputStream read(
+            final StorageKey key,
+            final Long offset,
+            final Long sizeInBytes,
+            final Long bytesPerSecondsReadRate) {
+
+        try {
+
+            final Path fileLocation = toPath(key);
+
+            final FileChannel fileChannel = FileSystemUtils.openChannel(fileLocation, StandardOpenOption.READ);
+            final InputStream fileInputStream = FileSystemUtils.read(fileChannel, offset);
+
+            return throttled(bounded(fileInputStream, sizeInBytes), bytesPerSecondsReadRate);
+
+        } catch (Exception e) {
+            throw UnexpectedException.with("Failed to read file for key: " + key.getFullKey(), e);
+        }
+
+    }
+
+    @Override
     public Checksum write(
             final StorageKey key,
             final InputStream inputStream,

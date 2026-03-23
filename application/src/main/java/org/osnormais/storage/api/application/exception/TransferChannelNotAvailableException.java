@@ -9,6 +9,7 @@ public class TransferChannelNotAvailableException extends SilentApplicationExcep
     private static final String DEFAULT_MESSAGE = "Transfer channel is not available.";
 
     private static final String UPLOAD_TYPE = "upload";
+    private static final String DOWNLOAD_TYPE = "download";
 
     private TransferChannelNotAvailableException(final FileId fileId, final String type) {
         super(
@@ -25,6 +26,10 @@ public class TransferChannelNotAvailableException extends SilentApplicationExcep
 
     public static TransferChannelNotAvailableException upload(final FileId fileId) {
         return new TransferChannelNotAvailableException(fileId, UPLOAD_TYPE);
+    }
+
+    public static TransferChannelNotAvailableException download(final FileId fileId) {
+        return new TransferChannelNotAvailableException(fileId, DOWNLOAD_TYPE);
     }
 
 }

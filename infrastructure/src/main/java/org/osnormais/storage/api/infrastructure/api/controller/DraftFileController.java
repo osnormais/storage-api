@@ -1,9 +1,12 @@
 package org.osnormais.storage.api.infrastructure.api.controller;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.UUID;
 
+import org.osnormais.storage.api.application.usecase.file.chunk.download.DownloadFileChunkInput;
+import org.osnormais.storage.api.application.usecase.file.chunk.download.DownloadFileChunkUseCase;
 import org.osnormais.storage.api.application.usecase.file.chunk.upload.UploadFileChunkInput;
 import org.osnormais.storage.api.application.usecase.file.chunk.upload.UploadFileChunkUseCase;
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileInput;
@@ -19,12 +22,14 @@ import org.osnormais.storage.api.application.usecase.file.transferchannel.upload
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +42,7 @@ public class DraftFileController {
     private final CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase;
     private final CompleteFileUploadTransferChannelUseCase completeFileUploadTransferChannelUseCase;
     private final UploadFileChunkUseCase uploadFileChunkUseCase;
+    private final DownloadFileChunkUseCase downloadFileChunkUseCase;
     private final CreateFileDownloadTransferChannelUseCase createFileDownloadTransferChannelUseCase;
 
     public DraftFileController(
@@ -44,12 +50,34 @@ public class DraftFileController {
             CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase,
             CompleteFileUploadTransferChannelUseCase completeFileUploadTransferChannelUseCase,
             UploadFileChunkUseCase uploadFileChunkUseCase,
+            DownloadFileChunkUseCase downloadFileChunkUseCase,
             CreateFileDownloadTransferChannelUseCase createFileDownloadTransferChannelUseCase) {
         this.createFileUseCase = createFileUseCase;
         this.createFileUploadTransferChannelUseCase = createFileUploadTransferChannelUseCase;
         this.completeFileUploadTransferChannelUseCase = completeFileUploadTransferChannelUseCase;
         this.uploadFileChunkUseCase = uploadFileChunkUseCase;
+        this.downloadFileChunkUseCase = downloadFileChunkUseCase;
         this.createFileDownloadTransferChannelUseCase = createFileDownloadTransferChannelUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<StreamingResponseBody> getChunkInputStream(DownloadFileChunkInput input) {
+
+        InputStream inputStream = downloadFileChunkUseCase
+                .execute(input)
+                .data();
+
+        StreamingResponseBody responseBody = outputStream -> {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+                outputStream.flush();
+            }
+        };
+
+        return ResponseEntity.ok().body(responseBody);
+
     }
 
     @PostMapping
