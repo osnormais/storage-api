@@ -47,7 +47,7 @@ public class FileTest {
                         expectedFileId,
                         expectedSize,
                         expectedChecksum,
-                        false,
+                        null,
                         expectedUploadChannel,
                         expectedDownloadChannel,
                         null));
@@ -82,7 +82,7 @@ public class FileTest {
                         expectedFileId,
                         expectedSize,
                         expectedChecksum,
-                        false,
+                        null,
                         expectedUploadChannel,
                         expectedDownloadChannel,
                         null));
@@ -112,7 +112,7 @@ public class FileTest {
                         expectedFileId,
                         expectedSize,
                         expectedChecksum,
-                        false,
+                        null,
                         expectedUploadChannel,
                         expectedDownloadChannel,
                         null));
@@ -149,7 +149,7 @@ public class FileTest {
                 expectedFileId,
                 expectedSize,
                 expectedChecksum,
-                false,
+                null,
                 expectedUploadChannel,
                 expectedDownloadChannel,
                 null);
@@ -190,7 +190,7 @@ public class FileTest {
                 expectedFileId,
                 expectedSize,
                 expectedChecksum,
-                false,
+                null,
                 null,
                 expectedDownloadChannel,
                 null);
@@ -226,7 +226,7 @@ public class FileTest {
                 expectedFileId,
                 expectedSize,
                 expectedChecksum,
-                false,
+                null,
                 expectedUploadChannel,
                 expectedDownloadChannel,
                 null);
@@ -276,7 +276,7 @@ public class FileTest {
                 expectedFileId,
                 expectedSize,
                 expectedChecksum,
-                false,
+                null,
                 expectedUploadChannel,
                 expectedDownloadChannel,
                 null);
@@ -365,7 +365,7 @@ public class FileTest {
                 expectedFileId,
                 expectedSize,
                 expectedChecksum,
-                false,
+                null,
                 expectedUploadChannel,
                 expectedDownloadChannel,
                 null);
@@ -402,7 +402,7 @@ public class FileTest {
                 expectedFileId,
                 expectedSize,
                 expectedChecksum,
-                false,
+                null,
                 expectedUploadChannel,
                 expectedDownloadChannel,
                 null);

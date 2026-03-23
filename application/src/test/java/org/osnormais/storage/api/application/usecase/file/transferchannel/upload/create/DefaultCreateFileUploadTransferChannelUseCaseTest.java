@@ -73,7 +73,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedCheckcum,
-                false,
+                null,
                 null,
                 null,
                 null);
@@ -198,7 +198,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedCheckcum,
-                false,
+                null,
                 transferChannel,
                 null,
                 null);
