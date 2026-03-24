@@ -96,7 +96,7 @@ public class TransferChannel extends Entity<TransferChannelId> {
     @Override
     public String toString() {
         return "TransferChannel [id=" + getId().getStringValue()
-                + "status=" + status
+                + ", status=" + status
                 + ", throughputLimit=" + throughputLimit
                 + ", chunkSpecification=" + chunkSpecification + "]";
     }
