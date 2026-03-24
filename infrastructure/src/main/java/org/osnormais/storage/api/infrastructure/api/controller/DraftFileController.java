@@ -61,10 +61,12 @@ public class DraftFileController {
     }
 
     @GetMapping
-    public ResponseEntity<StreamingResponseBody> getChunkInputStream(@RequestBody DownloadFileChunkInput input) {
+    public ResponseEntity<StreamingResponseBody> getChunkInputStream(
+            @RequestHeader UUID fileId,
+            @RequestHeader Long chunkIndex) {
 
         InputStream inputStream = downloadFileChunkUseCase
-                .execute(input)
+                .execute(new DownloadFileChunkInput(fileId, chunkIndex))
                 .data();
 
         StreamingResponseBody responseBody = outputStream -> {
