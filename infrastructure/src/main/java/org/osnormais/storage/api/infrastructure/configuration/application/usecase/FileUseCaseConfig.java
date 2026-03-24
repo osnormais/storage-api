@@ -96,6 +96,7 @@ public class FileUseCaseConfig {
                 fileCommandGateway);
     }
 
+    @Bean
     DownloadFileChunkUseCase downloadFileChunkUseCase() {
         return new DefaultDownloadFileChunkUseCase(
                 fileQueryGateway,
