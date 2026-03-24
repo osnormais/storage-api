@@ -159,6 +159,9 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     public File publicate(final Supplier<Checksum> checksumSupplier) {
 
+        if (isNull(checksumSupplier))
+            throw InvalidArgumentException.with(DomainException.Error.with("'checksumSupplier' should not be null"));
+
         if (isPublished())
             throw FileAlreadyPublishedException.create(this);
 
