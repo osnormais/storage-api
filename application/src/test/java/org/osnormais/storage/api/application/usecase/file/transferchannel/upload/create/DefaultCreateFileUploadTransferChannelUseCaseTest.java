@@ -22,12 +22,12 @@ import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 
 @ExtendWith(MockitoExtension.class)
 public class DefaultCreateFileUploadTransferChannelUseCaseTest {
@@ -62,9 +62,6 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 expectedChunkBytesSize,
                 expectedMaxParallelChunks);
 
-        final var expectedTransferChannel = TransferChannel.create(expectedThroughputLimit,
-                expectedChunkSpecification);
-
         final var expectedChecksumValue = "checksumValue";
         final var expectedChecksumAlgorithm = Checksum.Algorithm.MD5;
         final var expectedCheckcum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
@@ -87,7 +84,8 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                     assertEquals(expectedFileSize, file.getSize());
                     assertEquals(expectedCheckcum, file.getChecksum());
                     assertTrue(file.getUploadChannel().isPresent());
-                    assertEquals(expectedTransferChannel, file.getUploadChannel().get());
+                    assertEquals(expectedThroughputLimit, file.getUploadChannel().get().getThroughputLimit());
+                    assertEquals(expectedChunkSpecification, file.getUploadChannel().get().getChunkSpecification());
                     return true;
                 })))
                 .thenAnswer(invocation -> invocation.getArgument(0));

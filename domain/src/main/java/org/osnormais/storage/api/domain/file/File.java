@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.function.Supplier;
 
 import org.osnormais.storage.api.domain.AggregateRoot;
 import org.osnormais.storage.api.domain.event.DomainEvent;
@@ -20,9 +21,10 @@ import org.osnormais.storage.api.domain.file.event.FilePublishFailedEvent;
 import org.osnormais.storage.api.domain.file.event.FilePublishedEvent;
 import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
+import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.Publication;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
+import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 import org.osnormais.storage.api.domain.validation.ValidationError;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
@@ -119,18 +121,21 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 new LinkedList<>());
     }
 
-    public File openUploadChannel(final TransferChannel transferChannel) {
+    public File openUploadChannel(final ThroughputLimit throughputLimit, final ChunkSpecification chunkSpecification) {
 
-        if (isNull(transferChannel))
-            throw InvalidArgumentException.with(DomainException.Error.with("'transferChannel' should not be null"));
+        if (isNull(throughputLimit))
+            throw InvalidArgumentException.with(DomainException.Error.with("'throughputLimit' should not be null"));
+
+        if (isNull(chunkSpecification))
+            throw InvalidArgumentException.with(DomainException.Error.with("'chunkSpecification' should not be null"));
 
         if (isPublished())
             throw FileAlreadyPublishedException.create(this);
 
-        if (this.uploadChannel.isPresent())
+        if (hasOpenUploadChannel())
             throw UploadTransferChannelAlreadyOpennedException.create();
 
-        this.uploadChannel = Optional.of(transferChannel);
+        this.uploadChannel = Optional.of(TransferChannel.create(throughputLimit, chunkSpecification));
 
         return this;
 
@@ -138,68 +143,70 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     public File completeUploadChannel() {
 
-        if (this.uploadChannel.isEmpty())
+        if (isPublished())
+            throw FileAlreadyPublishedException.create(this);
+
+        if (!hasOpenUploadChannel())
             return this;
 
-        this.uploadChannel = Optional.empty();
+        this.uploadChannel
+                .ifPresentOrElse(
+                        TransferChannel::close,
+                        () -> {
+                            throw new IllegalStateException("Upload channel is not openned");// TODO create exception
+                        });
+
         events.add(FileUploadTransferChannelCompletedEvent.create(this));
+        this.uploadChannel.get().close();
 
         return this;
 
     }
 
-    public Boolean isPublished() {
+    public File publicate(final Supplier<Checksum> checksumSupplier) {
+
+        if (isPublished())
+            throw FileAlreadyPublishedException.create(this);
+
+        if (hasOpenUploadChannel())
+            throw FileUploadInProgressException.create(this);
+
+        final Checksum checksum = checksumSupplier.get();
+
+        if (isNull(checksum))
+            throw InvalidArgumentException.with(DomainException.Error.with("'checksum' should not be null"));
+
+        if (this.checksum.equals(checksum)) {
+
+            this.publication = Optional.of(Publication.ok());
+            events.add(FilePublishedEvent.create(this));
+
+        } else {
+
+            final Publication.Error error = Publication.Error
+                    .of("File integrity compromised during finalization. Expected checksum: %s, actual checksum: %s"
+                            .formatted(this.checksum, checksum));
+
+            this.publication = Optional.of(Publication.error(error));
+            events.add(FilePublishFailedEvent.create(this));
+
+        }
+
+        return this;
+
+    }
+
+    private Boolean isPublished() {
         return this.publication
                 .map(Publication::status)
                 .filter(status -> Publication.Status.OK.equals(status))
                 .isPresent();
     }
 
-    public File validateCanBeFinalized() {
-
-        if (this.uploadChannel.isPresent())
-            throw FileUploadInProgressException.create(this);
-
-        return this;
-    }
-
-    public File finalizePublication(final Checksum checksum) {
-
-        if (isNull(checksum))
-            throw InvalidArgumentException.with(DomainException.Error.with("'checksum' should not be null"));
-
-        validateCanBeFinalized();
-
-        if (this.checksum.equals(checksum))
-            completePublication();
-        else
-            failPublication(
-                    Publication.Error.of(
-                            "File integrity compromised during finalization. Expected checksum: %s, actual checksum: %s"
-                                    .formatted(this.checksum, checksum)));
-
-        return this;
-
-    }
-
-    private void completePublication() {
-
-        if (isPublished())
-            return;
-
-        this.publication = Optional.of(Publication.ok());
-        events.add(FilePublishedEvent.create(this));
-
-    }
-
-    private void failPublication(final Publication.Error error) {
-
-        if (isPublished())
-            throw FileAlreadyPublishedException.create(this);
-
-        this.publication = Optional.of(Publication.error(error));
-        events.add(FilePublishFailedEvent.create(this));
-
+    private Boolean hasOpenUploadChannel() {
+        return uploadChannel
+                .map(TransferChannel::isOpen)
+                .orElse(false);
     }
 
     private void selfValidate() {
