@@ -170,9 +170,8 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
     void givenAFileWithUploadTransferChannelAlreadyOpen_whenCallsExecute_thenShouldThrowsValidationException() {
 
         final var expectedExceptionMessage = "Failed to open upload transfer channel";
-        final var expectedErrorsCount = 2;
-        final var expectedErrorMessage0 = "Transfer channel already open";
-        final var expectedErrorMessage1 = "Transfer channel already open, please close the current channel before opening a new one";
+        final var expectedErrorsCount = 1;
+        final var expectedErrorMessage0 = "Transfer channel already open, please close the current channel before opening a new one";
 
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedThroughputBytesLimitValue = 1024L;
@@ -218,7 +217,6 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
         assertEquals(expectedExceptionMessage, actualException.getMessage());
         assertEquals(expectedErrorsCount, actualException.getErrors().size());
         assertEquals(expectedErrorMessage0, actualException.getErrors().get(0).message());
-        assertEquals(expectedErrorMessage1, actualException.getErrors().get(1).message());
 
     }
 

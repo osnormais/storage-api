@@ -1,5 +1,7 @@
 package org.osnormais.storage.api.application.exception;
 
+import static java.util.Objects.isNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,9 @@ public class ApplicationException extends RuntimeException {
             final Throwable cause,
             final boolean verbose) {
         super(message, cause, enableSuppression(verbose), writableStackTrace(verbose));
-        this.errors = addCauseToErrors(errors, cause) == null ? List.of() : new ArrayList<>(errors);
+        this.errors = isNull(addCauseToErrors(errors, cause))
+                ? List.of(ApplicationException.Error.with(message))
+                : new ArrayList<>(errors);
     }
 
     public List<ApplicationException.Error> getErrors() {
