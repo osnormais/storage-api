@@ -55,12 +55,8 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        handler.validate(() -> file.openUploadChannel(throughputLimit, chunkSpecification));
-
-        final TransferChannel transferChannel = file
-                .getUploadChannel()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Failed to create upload transfer channel for file: " + fileId)); // TODO exception
+        final TransferChannel transferChannel = handler
+                .validate(() -> file.openUploadChannel(throughputLimit, chunkSpecification));
 
         if (handler.hasErrors())
             throw ValidationException.with("Failed to open upload transfer channel", handler);

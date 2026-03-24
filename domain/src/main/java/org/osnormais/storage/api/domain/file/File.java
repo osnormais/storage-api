@@ -121,7 +121,8 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 new LinkedList<>());
     }
 
-    public File openUploadChannel(final ThroughputLimit throughputLimit, final ChunkSpecification chunkSpecification) {
+    public TransferChannel openUploadChannel(final ThroughputLimit throughputLimit,
+            final ChunkSpecification chunkSpecification) {
 
         if (isNull(throughputLimit))
             throw InvalidArgumentException.with(DomainException.Error.with("'throughputLimit' should not be null"));
@@ -135,9 +136,9 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         if (hasOpenUploadChannel())
             throw UploadTransferChannelAlreadyOpennedException.create();
 
-        this.uploadChannel = Optional.of(TransferChannel.create(throughputLimit, chunkSpecification));
-
-        return this;
+        final TransferChannel transferChannel = TransferChannel.create(throughputLimit, chunkSpecification);
+        this.uploadChannel = Optional.of(transferChannel);
+        return transferChannel;
 
     }
 
@@ -149,15 +150,8 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         if (!hasOpenUploadChannel())
             return this;
 
-        this.uploadChannel
-                .ifPresentOrElse(
-                        TransferChannel::close,
-                        () -> {
-                            throw new IllegalStateException("Upload channel is not openned");// TODO create exception
-                        });
-
+        this.uploadChannel.ifPresent(TransferChannel::close);
         events.add(FileUploadTransferChannelCompletedEvent.create(this));
-        this.uploadChannel.get().close();
 
         return this;
 
