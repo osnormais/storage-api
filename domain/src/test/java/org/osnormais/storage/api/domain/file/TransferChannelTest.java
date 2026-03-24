@@ -13,12 +13,12 @@ public class TransferChannelTest {
     @Test
     void givenThroughputLimitAndChunkSpecificationNull_whenCallsCreate_thenShouldHandlerAppendTwoErrors() {
 
-        final var expectedExcpetionMessage = "'TransferChannel' validation failed";
+        final var expectedExceptionMessage = "'TransferChannel' validation failed";
 
         final var expectedErrorCount = 2;
 
-        final var expetedErrorMessage1 = "'throughputLimit' should not be null";
-        final var expetedErrorMessage2 = "'chunkSpecification' should not be null";
+        final var expectedErrorMessage1 = "'throughputLimit' should not be null";
+        final var expectedErrorMessage2 = "'chunkSpecification' should not be null";
 
         final ThroughputLimit expectedThroughputLimit = null;
         final ChunkSpecification expectedChunkSpecification = null;
@@ -27,10 +27,10 @@ public class TransferChannelTest {
                 ValidationException.class,
                 () -> TransferChannel.create(expectedThroughputLimit, expectedChunkSpecification));
 
-        assertEquals(expectedExcpetionMessage, actualException.getMessage());
+        assertEquals(expectedExceptionMessage, actualException.getMessage());
         assertEquals(expectedErrorCount, actualException.getErrors().size());
-        assertEquals(expetedErrorMessage1, actualException.getErrors().get(0).message());
-        assertEquals(expetedErrorMessage2, actualException.getErrors().get(1).message());
+        assertEquals(expectedErrorMessage1, actualException.getErrors().get(0).message());
+        assertEquals(expectedErrorMessage2, actualException.getErrors().get(1).message());
 
     }
 

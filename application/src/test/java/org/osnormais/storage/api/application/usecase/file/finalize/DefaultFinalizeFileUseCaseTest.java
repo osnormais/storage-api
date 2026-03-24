@@ -117,7 +117,7 @@ public class DefaultFinalizeFileUseCaseTest {
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedFileId = FileId.of(expectedFileIdValue);
 
-        final var expectedExcpetionMessage = "[%s] not found".formatted(File.class.getSimpleName());
+        final var expectedExceptionMessage = "[%s] not found".formatted(File.class.getSimpleName());
         final var expectedErrorsCount = 1;
         final var expectedExceptionErrorMessage0 = "[%s] with id [%s] not found"
                 .formatted(
@@ -131,7 +131,7 @@ public class DefaultFinalizeFileUseCaseTest {
 
         final var actualException = assertThrows(NotFoundException.class, () -> useCase.execute(input));
 
-        assertEquals(expectedExcpetionMessage, actualException.getMessage());
+        assertEquals(expectedExceptionMessage, actualException.getMessage());
         assertEquals(expectedErrorsCount, actualException.getErrors().size());
         assertEquals(expectedExceptionErrorMessage0, actualException.getErrors().get(0).message());
 
@@ -150,7 +150,7 @@ public class DefaultFinalizeFileUseCaseTest {
         final var expectedFileId = FileId.of(expectedFileIdValue);
         final var expectedFileChecksum = Checksum.of(Algorithm.MD5, "checksumMD5");
 
-        final var expectedExcpetionMessage = "File [%s], already published".formatted(expectedFileIdValue);
+        final var expectedExceptionMessage = "File [%s], already published".formatted(expectedFileIdValue);
         final var expectedErrorsCount = 0;
 
         final TransferChannel uploadTransferChannel = null;
@@ -172,7 +172,7 @@ public class DefaultFinalizeFileUseCaseTest {
         final var actualException = assertThrows(FileAlreadyPublishedException.class,
                 () -> useCase.execute(input));
 
-        assertEquals(expectedExcpetionMessage, actualException.getMessage());
+        assertEquals(expectedExceptionMessage, actualException.getMessage());
         assertEquals(expectedErrorsCount, actualException.getErrors().size());
 
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
