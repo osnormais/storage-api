@@ -11,11 +11,11 @@ import org.osnormais.storage.api.application.port.ChunkWriter;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 
 public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
 
@@ -47,11 +47,12 @@ public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
 
         final TransferChannel uploadChannel = file
                 .getUploadChannel()
+                .filter(TransferChannel::isOpen)
                 .orElseThrow(() -> TransferChannelNotAvailableException.upload(fileId));
 
-        final Size chunkSize = uploadChannel.chunkSpecification().effectiveChunkSize(file.getSize(), chunkIndex);
-        final ParallelChunkLimit maxParallelChunks = uploadChannel.chunkSpecification().maxParallel();
-        final ThroughputLimit throughputLimit = uploadChannel.throughputLimit();
+        final Size chunkSize = uploadChannel.getChunkSpecification().effectiveChunkSize(file.getSize(), chunkIndex);
+        final ParallelChunkLimit maxParallelChunks = uploadChannel.getChunkSpecification().maxParallel();
+        final ThroughputLimit throughputLimit = uploadChannel.getThroughputLimit();
 
         if (maxParallelChunks.value() <= concurrencyTracker.getCurrentCount(fileId))
             throw ConcurrentChunkLimitExceededException.create(maxParallelChunks);
