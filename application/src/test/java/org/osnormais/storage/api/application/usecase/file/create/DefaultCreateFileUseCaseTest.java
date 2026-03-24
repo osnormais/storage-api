@@ -75,7 +75,9 @@ public class DefaultCreateFileUseCaseTest {
     void givenAnInvalidSizeInBytesInput_whenCallsExecute_thenShouldThrowsValidationException() {
 
         final var expectedExceptionMessage = "Failed to create File";
-        final var expectedErrorMessage = "bytes must be greater than 0";
+        final var expectedErrrosCount = 2;
+        final var expectedErrorMessage0 = "'File' validation failed";
+        final var expectedErrorMessage1 = "bytes must be greater than 0";
 
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedFileSizeInBytesValue = -1024L;
@@ -91,7 +93,10 @@ public class DefaultCreateFileUseCaseTest {
         final var actualException = assertThrows(ValidationException.class, () -> useCase.execute(input));
 
         assertEquals(expectedExceptionMessage, actualException.getMessage());
-        assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
+        assertEquals(expectedErrrosCount, actualException.getErrors().size());
+        assertEquals(expectedErrorMessage0, actualException.getErrors().get(0).message());
+        assertEquals(expectedErrorMessage1, actualException.getErrors().get(1).message());
+
 
         verify(fileCommandGateway, times(0)).create(any());
 

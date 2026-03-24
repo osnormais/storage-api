@@ -8,10 +8,10 @@ import org.osnormais.storage.api.application.port.ChunkReader;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 
 public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
 
@@ -43,10 +43,10 @@ public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
                 .orElseThrow(() -> TransferChannelNotAvailableException.download(fileId));
 
         final Size fileSize = file.getSize();
-        final Size chunkSize = downloadChannel.chunkSpecification().effectiveChunkSize(fileSize, chunkIndex);
-        final Long chunkOffset = downloadChannel.chunkSpecification().chunkOffset(fileSize, chunkIndex);
-        final ParallelChunkLimit maxParallelChunks = downloadChannel.chunkSpecification().maxParallel();
-        final ThroughputLimit throughputLimit = downloadChannel.throughputLimit();
+        final Size chunkSize = downloadChannel.getChunkSpecification().effectiveChunkSize(fileSize, chunkIndex);
+        final Long chunkOffset = downloadChannel.getChunkSpecification().chunkOffset(fileSize, chunkIndex);
+        final ParallelChunkLimit maxParallelChunks = downloadChannel.getChunkSpecification().maxParallel();
+        final ThroughputLimit throughputLimit = downloadChannel.getThroughputLimit();
 
         if (maxParallelChunks.value() <= concurrencyTracker.getCurrentCount(fileId))
             throw ConcurrentChunkLimitExceededException.create(maxParallelChunks);

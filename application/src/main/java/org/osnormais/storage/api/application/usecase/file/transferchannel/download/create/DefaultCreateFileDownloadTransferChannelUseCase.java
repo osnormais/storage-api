@@ -8,11 +8,11 @@ import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
 
@@ -55,9 +55,9 @@ public class DefaultCreateFileDownloadTransferChannelUseCase extends CreateFileD
 
         return new CreateFileDownloadTransferChannelOutput(
                 file.getId().getValue(),
-                transferChannel.chunkSpecification().totalChunks(file.getSize()),
-                transferChannel.chunkSpecification().effectiveChunkSize(file.getSize()).bytes(),
-                transferChannel.chunkSpecification().lastChunkSize(file.getSize()).bytes());
+                transferChannel.getChunkSpecification().totalChunks(file.getSize()),
+                transferChannel.getChunkSpecification().effectiveChunkSize(file.getSize()).bytes(),
+                transferChannel.getChunkSpecification().lastChunkSize(file.getSize()).bytes());
 
     }
 
