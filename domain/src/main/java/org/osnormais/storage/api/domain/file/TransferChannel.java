@@ -69,7 +69,7 @@ public class TransferChannel extends Entity<TransferChannelId> {
         return TransferChannelStatus.OPENED.equals(this.status);
     }
 
-    public TransferChannel close() {
+    TransferChannel close() {
         this.status = TransferChannelStatus.CLOSED;
         return this;
     }
