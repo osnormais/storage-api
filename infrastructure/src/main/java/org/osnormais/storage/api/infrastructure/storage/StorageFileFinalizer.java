@@ -2,6 +2,7 @@ package org.osnormais.storage.api.infrastructure.storage;
 
 import static java.util.Objects.requireNonNull;
 
+import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
 import org.osnormais.storage.api.application.port.FileFinalizer;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.TransferChannel;
@@ -30,7 +31,7 @@ public class StorageFileFinalizer implements FileFinalizer {
                 .getUploadChannel()
                 .map(TransferChannel::getChunkSpecification)
                 .map(chunkSpecification -> chunkSpecification.effectiveChunkSize(fileSize))
-                .orElseThrow(() -> new IllegalArgumentException("Chunk size not found for file: " + file.getId()));
+                .orElseThrow(() -> TransferChannelNotAvailableException.upload(file.getId()));
 
         assembler.assemble(storageKey, fileSize.bytes(), chunkSize.bytes());
 
