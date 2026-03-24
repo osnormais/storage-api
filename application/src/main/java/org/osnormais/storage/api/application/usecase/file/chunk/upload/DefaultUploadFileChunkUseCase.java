@@ -47,6 +47,7 @@ public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
 
         final TransferChannel uploadChannel = file
                 .getUploadChannel()
+                .filter(TransferChannel::isOpen)
                 .orElseThrow(() -> TransferChannelNotAvailableException.upload(fileId));
 
         final Size chunkSize = uploadChannel.getChunkSpecification().effectiveChunkSize(file.getSize(), chunkIndex);
