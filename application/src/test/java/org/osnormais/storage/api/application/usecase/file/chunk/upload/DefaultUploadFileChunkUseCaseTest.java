@@ -27,12 +27,12 @@ import org.osnormais.storage.api.application.port.ChunkWriter;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 
 @ExtendWith(MockitoExtension.class)
 public class DefaultUploadFileChunkUseCaseTest {
@@ -95,7 +95,7 @@ public class DefaultUploadFileChunkUseCaseTest {
         final var expectedConcurrencyTrackerCount = 0;
 
         final var chunkSize = expectedUploadTransferChannel
-                .chunkSpecification()
+                .getChunkSpecification()
                 .effectiveChunkSize(
                         expectedFileSize,
                         expectedChunkIndex);
@@ -393,7 +393,7 @@ public class DefaultUploadFileChunkUseCaseTest {
         final var expectedConcurrencyTrackerCount = 0;
 
         final var chunkSize = expectedUploadTransferChannel
-                .chunkSpecification()
+                .getChunkSpecification()
                 .effectiveChunkSize(
                         expectedFileSize,
                         expectedChunkIndex);

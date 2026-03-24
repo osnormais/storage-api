@@ -9,7 +9,6 @@ import org.osnormais.storage.api.application.port.FileFinalizer;
 import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
-import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 
 public class DefaultFinalizeFileUseCase extends FinalizeFileUseCase {
 
@@ -36,14 +35,9 @@ public class DefaultFinalizeFileUseCase extends FinalizeFileUseCase {
 
         final File file = fileQueryGateway
                 .findById(fileId)
-                .orElseThrow(() -> NotFoundException.create(File.class, fileId))
-                .validateCanBeFinalized();
+                .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        if (file.isPublished())
-            return;
-
-        final Checksum checksum = fileFinalizer.finalize(file);
-        file.finalizePublication(checksum);
+        file.publicate(() -> fileFinalizer.finalize(file));
         eventDispatcher.notify(fileCommandGateway.update(file));
 
     }

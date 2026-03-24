@@ -2,7 +2,6 @@ package org.osnormais.storage.api.domain.file;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,7 +24,6 @@ import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Publication;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
 
 class FileTest {
@@ -263,9 +261,6 @@ class FileTest {
                     ParallelChunkLimit.of(2));
 
             final Publication expectedPublication = null;
-            final var expectedUploadChannel = TransferChannel.create(
-                    expectedThroughputLimit,
-                    expectedChunkSpecification);
 
             final TransferChannel expectedDownloadChannel = null;
 
@@ -280,10 +275,12 @@ class FileTest {
 
             assertTrue(expectedFile.getUploadChannel().isEmpty());
 
-            assertDoesNotThrow(() -> expectedFile.openUploadChannel(expectedUploadChannel));
+            assertDoesNotThrow(() -> expectedFile
+                    .openUploadChannel(expectedThroughputLimit, expectedChunkSpecification));
 
             assertTrue(expectedFile.getUploadChannel().isPresent());
-            assertEquals(expectedUploadChannel, expectedFile.getUploadChannel().get());
+            assertEquals(expectedThroughputLimit, expectedFile.getUploadChannel().get().getThroughputLimit());
+            assertEquals(expectedChunkSpecification, expectedFile.getUploadChannel().get().getChunkSpecification());
 
         }
 
@@ -292,7 +289,7 @@ class FileTest {
 
             final var expectedExceptionMessage = "Invalid argument provided.";
             final var expectedErrorsCount = 1;
-            final var expectedErrorMessage = "'transferChannel' should not be null";
+            final var expectedErrorMessage = "'throughputLimit' should not be null";
 
             final var expectedIdValue = UUID.randomUUID();
             final var expectedFileId = FileId.of(expectedIdValue);
@@ -303,6 +300,9 @@ class FileTest {
             final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
             final Publication expectedPublication = null;
+
+            final ThroughputLimit expectedUploadChannelThroughputLimit = null;
+            final ChunkSpecification expectedUploadChannelChunkSpecification = null;
             final TransferChannel expectedUploadChannel = null;
             final TransferChannel expectedDownloadChannel = null;
 
@@ -319,7 +319,9 @@ class FileTest {
 
             final var actualException = assertThrows(
                     InvalidArgumentException.class,
-                    () -> expectedFile.openUploadChannel(expectedUploadChannel));
+                    () -> expectedFile.openUploadChannel(
+                            expectedUploadChannelThroughputLimit,
+                            expectedUploadChannelChunkSpecification));
 
             final var actualExceptionMessage = actualException.getMessage();
             final var actualErrors = actualException.getErrors();
@@ -371,7 +373,7 @@ class FileTest {
 
             final var actualException = assertThrows(
                     TransferChannelAlreadyOpennedException.class,
-                    () -> expectedFile.openUploadChannel(expectedUploadChannel));
+                    () -> expectedFile.openUploadChannel(expectedThroughputLimit, expectedChunkSpecification));
 
             final var actualExceptionMessage = actualException.getMessage();
             final var actualErrors = actualException.getErrors();
@@ -423,7 +425,7 @@ class FileTest {
 
             final var actualException = assertThrows(
                     FileAlreadyPublishedException.class,
-                    () -> expectedFile.openUploadChannel(expectedUploadChannel));
+                    () -> expectedFile.openUploadChannel(expectedThroughputLimit, expectedChunkSpecification));
 
             final var actualExceptionMessage = actualException.getMessage();
             final var actualErrors = actualException.getErrors();
@@ -489,10 +491,14 @@ class FileTest {
                     ParallelChunkLimit.of(2));
 
             final Publication expectedPublication = null;
-            final var expectedUploadChannel = TransferChannel.create(
+            final var expectedUploadChannel = TransferChannel.with(
+                    TransferChannelId.unique(),
+                    TransferChannelStatus.OPENED,
                     expectedThroughputLimit,
                     expectedChunkSpecification);
             final TransferChannel expectedDownloadChannel = null;
+
+            final Boolean expectedUploadChannelIsOpen = false;
 
             final var expectedFile = File.with(
                     expectedFileId,
@@ -509,7 +515,8 @@ class FileTest {
 
             final var actualEvent = actualFile.nextEvent();
 
-            assertTrue(actualFile.getUploadChannel().isEmpty());
+            assertTrue(actualFile.getUploadChannel().isPresent());
+            assertEquals(expectedUploadChannelIsOpen, actualFile.getUploadChannel().get().isOpen());
             assertTrue(actualEvent.isPresent());
             assertTrue(actualEvent.get() instanceof FileUploadTransferChannelCompletedEvent);
 
@@ -521,10 +528,10 @@ class FileTest {
     class FinalizePublication {
 
         @Nested
-        class CompletePublication {
+        class Publicate {
 
             @Test
-            void givenAValidUnpublishedFile_whenCallsFinalizePublication_thenShouldCompletePublication() {
+            void givenAValidUnpublishedFile_whenCallsPublicate_thenShouldCompletePublication() {
 
                 final var expectedIdValue = UUID.randomUUID();
                 final var expectedFileId = FileId.of(expectedIdValue);
@@ -548,14 +555,11 @@ class FileTest {
                         expectedDownloadChannel,
                         null);
 
-                assertFalse(expectedFile.isPublished());
-
                 final var actualFile = assertDoesNotThrow(
-                        () -> expectedFile.finalizePublication(expectedChecksum));
+                        () -> expectedFile.publicate(() -> expectedChecksum));
 
                 final var actualEvent = actualFile.nextEvent();
 
-                assertTrue(actualFile.isPublished());
                 assertTrue(actualEvent.isPresent());
                 assertTrue(actualEvent.get() instanceof FilePublishedEvent);
 
@@ -564,11 +568,14 @@ class FileTest {
             }
 
             @Test
-            void givenAValidPublishedFile_whenCallsFinalizePublication_thenShouldNothing() {
+            void givenAValidPublishedFile_whenCallsPublicate_thenShouldThrowsFileAlreadyPublishedException() {
 
                 final var expectedIdValue = UUID.randomUUID();
                 final var expectedFileId = FileId.of(expectedIdValue);
                 final var expectedSize = new Size(2L);
+
+                final var expectedExceptionMessage = "File [%s], already published".formatted(expectedIdValue.toString());
+                final var expectedErrorsCount = 0;
 
                 final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
                 final var expectedChecksumValue = "123";
@@ -588,20 +595,18 @@ class FileTest {
                         expectedDownloadChannel,
                         null);
 
-                assertTrue(expectedFile.isPublished());
+                final var actualException = assertThrows(
+                        FileAlreadyPublishedException.class,
+                        () -> expectedFile.publicate(() -> expectedChecksum));
 
-                final var actualFile = assertDoesNotThrow(
-                        () -> expectedFile.finalizePublication(expectedChecksum));
 
-                final var actualEvent = actualFile.nextEvent();
-
-                assertTrue(actualFile.isPublished());
-                assertTrue(actualEvent.isEmpty());
+                assertEquals(expectedExceptionMessage, actualException.getMessage());
+                assertEquals(expectedErrorsCount, actualException.getErrors().size());
 
             }
 
             @Test
-            void givenAValidUnpublishedFile_whenCallsFinalizePublicationWithExistingUploadChannel_thenShouldThrowsFileUploadInProgressException() {
+            void givenAValidUnpublishedFile_whenCallsPublicateWithExistingUploadChannel_thenShouldThrowsFileUploadInProgressException() {
 
                 final var expectedIdValue = UUID.randomUUID();
                 final var expectedFileId = FileId.of(expectedIdValue);
@@ -637,11 +642,9 @@ class FileTest {
                         expectedDownloadChannel,
                         null);
 
-                assertFalse(expectedFile.isPublished());
-
                 final var actualException = assertThrows(
                         FileUploadInProgressException.class,
-                        () -> expectedFile.finalizePublication(expectedChecksum));
+                        () -> expectedFile.publicate(() -> expectedChecksum));
 
                 final var actualExceptionMessage = actualException.getMessage();
                 final var actualErrors = actualException.getErrors();
@@ -686,12 +689,9 @@ class FileTest {
                         expectedDownloadChannel,
                         null);
 
-                assertFalse(expectedFile.isPublished());
-
                 final var actualFile = assertDoesNotThrow(() -> expectedFile
-                        .finalizePublication(Checksum.of(expectedChecksumAlgorithm, "abc123")));
+                        .publicate(() -> Checksum.of(expectedChecksumAlgorithm, "abc123")));
 
-                assertFalse(actualFile.isPublished());
                 assertEquals(expectedPublicationStatus, actualFile.getPublication().get().status());
                 assertEquals(expectedPublicationError, actualFile.getPublication().get().error().get());
 
@@ -740,11 +740,9 @@ class FileTest {
                         expectedDownloadChannel,
                         null);
 
-                assertFalse(expectedFile.isPublished());
-
                 final var actualException = assertThrows(
                         FileUploadInProgressException.class,
-                        () -> expectedFile.finalizePublication(expectedChecksum));
+                        () -> expectedFile.publicate(() -> expectedChecksum));
 
                 final var actualExceptionMessage = actualException.getMessage();
                 final var actualErrors = actualException.getErrors();
@@ -770,7 +768,8 @@ class FileTest {
 
                 final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
                 final var expectedChecksumValue = "123";
-                final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
+                final var expectedChecksum = Checksum.of(expectedChecksumAlgorithm,
+                        expectedChecksumValue);
 
                 final Publication expectedPublication = Publication.ok();
                 final TransferChannel expectedUploadChannel = null;
@@ -785,11 +784,10 @@ class FileTest {
                         expectedDownloadChannel,
                         null);
 
-                assertTrue(expectedFile.isPublished());
-
                 final var actualException = assertThrows(
                         FileAlreadyPublishedException.class,
-                        () -> expectedFile.finalizePublication(Checksum.of(expectedChecksumAlgorithm, "abc123")));
+                        () -> expectedFile.publicate(() -> Checksum
+                                .of(expectedChecksumAlgorithm, "abc123")));
 
                 final var actualExceptionMessage = actualException.getMessage();
                 final var actualErrors = actualException.getErrors();

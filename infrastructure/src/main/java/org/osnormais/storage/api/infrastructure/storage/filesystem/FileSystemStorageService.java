@@ -82,7 +82,7 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public void assemble(final StorageKey key, final Long fileSize) {
+    public void assemble(final StorageKey key, final Long fileSize, final Long chunkSize) {
 
         final StorageKey finalFileKey = key.subKey("data");
         final StorageKey chunksKey = key.subKey("upload", "chunks");
@@ -109,8 +109,11 @@ public class FileSystemStorageService implements StorageService {
                 if (!FileSystemUtils.exists(chunkPath))
                     continue;
 
-                final Long chunkSize = Files.size(chunkPath);
-                final Long offset = calculateOffset(chunkSize, chunkPosition, fileSize);
+                final Long offset = calculateOffset(
+                        chunkSize,
+                        Files.size(chunkPath),
+                        chunkPosition,
+                        fileSize);
 
                 outputChannel.position(offset);
 
@@ -138,16 +141,18 @@ public class FileSystemStorageService implements StorageService {
 
         final MessageDigest digest = MessageDigestUtils.create(checksumAlgorithm);
 
-        try (final FileChannel fileChannel = FileSystemUtils.openChannel(fileDataPath, StandardOpenOption.READ)) {
+        try (
 
-            final InputStream digestibleInputStream = InputStreamUtils
-                    .digestible(
-                            FileSystemUtils.read(fileChannel, 0L),
-                            digest);
+                final FileChannel fileChannel = FileSystemUtils
+                        .openChannel(fileDataPath, StandardOpenOption.READ);
+
+                final InputStream digestibleInputStream = InputStreamUtils
+                        .digestible(FileSystemUtils.read(fileChannel, 0L), digest)
+
+        ) {
 
             byte[] buffer = new byte[8192];
             while (digestibleInputStream.read(buffer) != -1) {
-                // Reading the stream to calculate the digest
             }
 
         } catch (Exception e) {
@@ -162,10 +167,14 @@ public class FileSystemStorageService implements StorageService {
         return rootLocation.resolve(storageKey.getFullKey());
     }
 
-    private static Long calculateOffset(final Long chunkSize, final Long chunkIndex, final Long fileSize) {
+    private static Long calculateOffset(
+            final Long chunkSize,
+            final Long actualChunkSize,
+            final Long chunkIndex,
+            final Long fileSize) {
 
-        if (fileSize - ((chunkIndex * chunkSize) + chunkSize) == 0)
-            return fileSize - chunkSize;
+        if (actualChunkSize < chunkSize)
+            return fileSize - actualChunkSize;
 
         return chunkIndex * chunkSize;
 
