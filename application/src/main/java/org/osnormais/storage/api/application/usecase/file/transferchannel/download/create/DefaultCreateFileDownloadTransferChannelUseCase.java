@@ -31,13 +31,19 @@ public class DefaultCreateFileDownloadTransferChannelUseCase extends CreateFileD
     @Override
     public CreateFileDownloadTransferChannelOutput execute(final CreateFileDownloadTransferChannelInput input) {
 
+        final FileId fileId = FileId.of(input.fileId());
+        final ThroughputLimit throughputLimit = ThroughputLimit.create(input.throughputBytesLimit());
+        final Size chunkSpecificationSize = Size.of(input.chunkBytesSize());
+        final ParallelChunkLimit chunkSpecificationParallelChunkLimit = ParallelChunkLimit
+                .of(input.maxParallelChunks());
+        final ChunkSpecification chunkSpecification = ChunkSpecification
+                .create(
+                        chunkSpecificationSize,
+                        chunkSpecificationParallelChunkLimit);
+
         final ValidationHandler handler = Notification.create();
 
-        final FileId fileId = FileId.of(input.fileId());
-        final TransferChannel transferChannel = createTransferChannel(input);
-
         fileId.validate(handler);
-        transferChannel.validate(handler);
 
         if (handler.hasErrors())
             throw ValidationException.with("Invalid input values", handler);
@@ -46,7 +52,8 @@ public class DefaultCreateFileDownloadTransferChannelUseCase extends CreateFileD
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        handler.validate(() -> file.openDownloadChannel(transferChannel));
+        final TransferChannel transferChannel = handler
+                .validate(() -> file.openDownloadChannel(throughputLimit, chunkSpecification));
 
         if (handler.hasErrors())
             throw ValidationException.with("Failed to open download transfer channel", handler);
@@ -58,23 +65,6 @@ public class DefaultCreateFileDownloadTransferChannelUseCase extends CreateFileD
                 transferChannel.getChunkSpecification().totalChunks(file.getSize()),
                 transferChannel.getChunkSpecification().effectiveChunkSize(file.getSize()).bytes(),
                 transferChannel.getChunkSpecification().lastChunkSize(file.getSize()).bytes());
-
-    }
-
-    private static TransferChannel createTransferChannel(final CreateFileDownloadTransferChannelInput input) {
-
-        final ThroughputLimit throughputLimit = ThroughputLimit.create(input.throughputBytesLimit());
-
-        final Size chunkSpecificationSize = Size.of(input.chunkBytesSize());
-        final ParallelChunkLimit chunkSpecificationParallelChunkLimit = ParallelChunkLimit
-                .of(input.maxParallelChunks());
-
-        final ChunkSpecification chunkSpecification = ChunkSpecification
-                .create(
-                        chunkSpecificationSize,
-                        chunkSpecificationParallelChunkLimit);
-
-        return TransferChannel.create(throughputLimit, chunkSpecification);
 
     }
 

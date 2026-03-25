@@ -122,7 +122,15 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 new LinkedList<>());
     }
 
-    public File openDownloadChannel(final TransferChannel transferChannel) {
+    public TransferChannel openDownloadChannel(
+            final ThroughputLimit throughputLimit,
+            final ChunkSpecification chunkSpecification) {
+
+        if (isNull(throughputLimit))
+            throw InvalidArgumentException.with(DomainException.Error.with("'throughputLimit' should not be null"));
+
+        if (isNull(chunkSpecification))
+            throw InvalidArgumentException.with(DomainException.Error.with("'chunkSpecification' should not be null"));
 
         if (!isPublished())
             throw FileNotYetPublished.create(this);
@@ -130,9 +138,10 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         if (downloadChannel.isPresent())
             throw TransferChannelAlreadyOpennedException.create();
 
+        final TransferChannel transferChannel = TransferChannel.create(throughputLimit, chunkSpecification);
         this.downloadChannel = Optional.of(transferChannel);
 
-        return this;
+        return transferChannel;
 
     }
 
