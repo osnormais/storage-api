@@ -140,7 +140,7 @@ public class DraftFileController {
     }
 
     @PostMapping("download-transfer-channel")
-    public ResponseEntity<CreateFileDownloadTransferChannelOutput> createFileUploadTransferChannel(
+    public ResponseEntity<CreateFileDownloadTransferChannelOutput> createFileDownloadTransferChannel(
             @RequestBody CreateFileDownloadTransferChannelInput input) {
         return ResponseEntity
                 .ok()
