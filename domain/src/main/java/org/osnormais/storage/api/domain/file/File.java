@@ -135,7 +135,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         if (!isPublished())
             throw FileNotYetPublished.create(this);
 
-        if (downloadChannel.isPresent())
+        if (hasOpenDownloadChannel())
             throw TransferChannelAlreadyOpennedException.create();
 
         final TransferChannel transferChannel = TransferChannel.create(throughputLimit, chunkSpecification);
@@ -227,6 +227,12 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
 
     private Boolean hasOpenUploadChannel() {
         return uploadChannel
+                .map(TransferChannel::isOpen)
+                .orElse(false);
+    }
+
+    private Boolean hasOpenDownloadChannel() {
+        return downloadChannel
                 .map(TransferChannel::isOpen)
                 .orElse(false);
     }

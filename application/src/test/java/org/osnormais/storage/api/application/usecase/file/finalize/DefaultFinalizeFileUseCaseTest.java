@@ -151,7 +151,8 @@ public class DefaultFinalizeFileUseCaseTest {
         final var expectedFileChecksum = Checksum.of(Algorithm.MD5, "checksumMD5");
 
         final var expectedExceptionMessage = "File [%s], already published".formatted(expectedFileIdValue);
-        final var expectedErrorsCount = 0;
+        final var expectedErrorsCount = 1;
+        final var expectedErrorMessage = expectedExceptionMessage;
 
         final TransferChannel uploadTransferChannel = null;
 
@@ -174,6 +175,7 @@ public class DefaultFinalizeFileUseCaseTest {
 
         assertEquals(expectedExceptionMessage, actualException.getMessage());
         assertEquals(expectedErrorsCount, actualException.getErrors().size());
+        assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
 
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
         verify(fileQueryGateway, times(1)).findById(any());

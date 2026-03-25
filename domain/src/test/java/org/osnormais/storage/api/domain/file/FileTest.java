@@ -395,7 +395,8 @@ class FileTest {
 
             final var expectedExceptionMessage = "File [%s], already published"
                     .formatted(expectedIdValue.toString());
-            final var expectedErrorsCount = 0;
+            final var expectedErrorsCount = 1;
+            final var expectedErrorMessage = expectedExceptionMessage;
 
             final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
             final var expectedChecksumValue = "123";
@@ -429,11 +430,10 @@ class FileTest {
 
             final var actualExceptionMessage = actualException.getMessage();
             final var actualErrors = actualException.getErrors();
-            final var actualErrorsCount = actualException.getErrors().size();
 
             assertEquals(actualExceptionMessage, expectedExceptionMessage);
             assertEquals(expectedErrorsCount, actualErrors.size());
-            assertEquals(expectedErrorsCount, actualErrorsCount);
+            assertEquals(expectedErrorMessage, actualErrors.get(0).message());
 
         }
 
@@ -574,8 +574,10 @@ class FileTest {
                 final var expectedFileId = FileId.of(expectedIdValue);
                 final var expectedSize = new Size(2L);
 
-                final var expectedExceptionMessage = "File [%s], already published".formatted(expectedIdValue.toString());
-                final var expectedErrorsCount = 0;
+                final var expectedExceptionMessage = "File [%s], already published"
+                        .formatted(expectedIdValue.toString());
+                final var expectedErrorsCount = 1;
+                final var expectedErrorMessage = expectedExceptionMessage;
 
                 final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
                 final var expectedChecksumValue = "123";
@@ -599,9 +601,9 @@ class FileTest {
                         FileAlreadyPublishedException.class,
                         () -> expectedFile.publicate(() -> expectedChecksum));
 
-
                 assertEquals(expectedExceptionMessage, actualException.getMessage());
                 assertEquals(expectedErrorsCount, actualException.getErrors().size());
+                assertEquals(expectedErrorMessage, actualException.getErrors().get(0).message());
 
             }
 
@@ -764,7 +766,8 @@ class FileTest {
 
                 final var expectedExceptionMessage = "File [%s], already published"
                         .formatted(expectedIdValue.toString());
-                final var expectedErrorsCount = 0;
+                final var expectedErrorsCount = 1;
+                final var expectedErrorMessage = expectedExceptionMessage;
 
                 final var expectedChecksumAlgorithm = Checksum.Algorithm.CRC_32;
                 final var expectedChecksumValue = "123";
@@ -796,6 +799,7 @@ class FileTest {
                 assertEquals(actualExceptionMessage, expectedExceptionMessage);
                 assertEquals(expectedErrorsCount, actualErrors.size());
                 assertEquals(expectedErrorsCount, actualErrorsCount);
+                assertEquals(expectedErrorMessage, actualErrors.get(0).message());
 
             }
 
