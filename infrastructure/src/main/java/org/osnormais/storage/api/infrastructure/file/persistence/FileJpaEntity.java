@@ -49,6 +49,7 @@ public class FileJpaEntity {
     @Enumerated(EnumType.STRING)
     private Publication.Status publicationStatus;
 
+    @Column(length = 400)
     private String publicationErrorMessage;
 
     private UUID uploadChannelId;
