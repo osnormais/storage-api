@@ -65,16 +65,16 @@ public class DraftFileController {
             @RequestHeader UUID fileId,
             @RequestHeader Long chunkIndex) {
 
-        InputStream inputStream = downloadFileChunkUseCase
-                .execute(new DownloadFileChunkInput(fileId, chunkIndex))
-                .data();
+        final var input = new DownloadFileChunkInput(fileId, chunkIndex);
 
         StreamingResponseBody responseBody = outputStream -> {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-                outputStream.flush();
+            try (InputStream inputStream = downloadFileChunkUseCase.execute(input).data()) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                    outputStream.flush();
+                }
             }
         };
 
