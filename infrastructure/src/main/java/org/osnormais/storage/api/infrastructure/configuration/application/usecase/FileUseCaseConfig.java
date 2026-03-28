@@ -22,6 +22,8 @@ import org.osnormais.storage.api.application.usecase.file.transferchannel.upload
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.complete.DefaultCompleteFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.DefaultCreateFileUploadTransferChannelUseCase;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.DefaultRetrieveFileUploadTransferChannelUseCase;
+import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.RetrieveFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,6 +64,11 @@ public class FileUseCaseConfig {
     @Bean
     CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase() {
         return new DefaultCreateFileUploadTransferChannelUseCase(fileQueryGateway, fileCommandGateway);
+    }
+
+    @Bean
+    RetrieveFileUploadTransferChannelUseCase retrieveFileUploadTransferChannelUseCase() {
+        return new DefaultRetrieveFileUploadTransferChannelUseCase(fileQueryGateway);
     }
 
     @Bean
