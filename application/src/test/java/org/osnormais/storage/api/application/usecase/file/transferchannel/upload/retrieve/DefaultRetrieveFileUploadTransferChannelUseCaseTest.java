@@ -124,7 +124,8 @@ public class DefaultRetrieveFileUploadTransferChannelUseCaseTest {
 
         final var input = new RetrieveFileUploadTransferChannelInput(expectedFileIdValue);
 
-        final var actualException = assertThrows(TransferChannelNotAvailableException.class, () -> useCase.execute(input));
+        final var actualException = assertThrows(TransferChannelNotAvailableException.class,
+                () -> useCase.execute(input));
 
         assertEquals("Transfer channel is not available.", actualException.getMessage());
         assertEquals(1, actualException.getErrors().size());
@@ -133,4 +134,3 @@ public class DefaultRetrieveFileUploadTransferChannelUseCaseTest {
     }
 
 }
-
