@@ -19,12 +19,12 @@ import org.osnormais.storage.api.application.exception.TransferChannelNotAvailab
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 
 @ExtendWith(MockitoExtension.class)
 public class DefaultRetrieveFileUploadTransferChannelUseCaseTest {
@@ -58,6 +58,7 @@ public class DefaultRetrieveFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 Size.of(expectedFileSizeValue),
                 Checksum.of(Checksum.Algorithm.CRC_32, "checksum"),
+                null,
                 expectedTransferChannel,
                 null,
                 null);
@@ -115,6 +116,7 @@ public class DefaultRetrieveFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 Size.of(2048L),
                 Checksum.of(Checksum.Algorithm.CRC_32, "checksum"),
+                null,
                 null,
                 null,
                 null);

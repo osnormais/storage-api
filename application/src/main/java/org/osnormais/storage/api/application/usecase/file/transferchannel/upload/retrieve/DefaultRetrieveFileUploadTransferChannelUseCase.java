@@ -7,7 +7,7 @@ import org.osnormais.storage.api.application.exception.TransferChannelNotAvailab
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
+import org.osnormais.storage.api.domain.file.TransferChannel;
 
 public class DefaultRetrieveFileUploadTransferChannelUseCase extends RetrieveFileUploadTransferChannelUseCase {
 
@@ -32,11 +32,12 @@ public class DefaultRetrieveFileUploadTransferChannelUseCase extends RetrieveFil
 
         return new RetrieveFileUploadTransferChannelOutput(
                 file.getId().getValue(),
-                uploadChannel.throughputLimit().bytesPerSecond(),
-                uploadChannel.chunkSpecification().totalChunks(file.getSize()),
-                uploadChannel.chunkSpecification().effectiveChunkSize(file.getSize()).bytes(),
-                uploadChannel.chunkSpecification().lastChunkSize(file.getSize()).bytes(),
-                uploadChannel.chunkSpecification().maxParallel().value());
+                uploadChannel.getStatus(),
+                uploadChannel.getThroughputLimit().bytesPerSecond(),
+                uploadChannel.getChunkSpecification().totalChunks(file.getSize()),
+                uploadChannel.getChunkSpecification().effectiveChunkSize(file.getSize()).bytes(),
+                uploadChannel.getChunkSpecification().lastChunkSize(file.getSize()).bytes(),
+                uploadChannel.getChunkSpecification().maxParallel().value());
 
     }
 
