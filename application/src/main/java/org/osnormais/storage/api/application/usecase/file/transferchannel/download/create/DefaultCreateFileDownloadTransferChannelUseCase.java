@@ -1,0 +1,71 @@
+package org.osnormais.storage.api.application.usecase.file.transferchannel.download.create;
+
+import static java.util.Objects.requireNonNull;
+
+import org.osnormais.storage.api.application.exception.NotFoundException;
+import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
+import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
+import org.osnormais.storage.api.domain.exception.ValidationException;
+import org.osnormais.storage.api.domain.file.File;
+import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.domain.file.TransferChannel;
+import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
+import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
+import org.osnormais.storage.api.domain.file.valueobject.Size;
+import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
+import org.osnormais.storage.api.domain.validation.handler.Notification;
+import org.osnormais.storage.api.domain.validation.handler.ValidationHandler;
+
+public class DefaultCreateFileDownloadTransferChannelUseCase extends CreateFileDownloadTransferChannelUseCase {
+
+    private final FileQueryGateway fileQueryGateway;
+    private final FileCommandGateway fileCommandGateway;
+
+    public DefaultCreateFileDownloadTransferChannelUseCase(
+            final FileQueryGateway fileQueryGateway,
+            final FileCommandGateway fileCommandGateway) {
+        this.fileQueryGateway = requireNonNull(fileQueryGateway);
+        this.fileCommandGateway = requireNonNull(fileCommandGateway);
+    }
+
+    @Override
+    public CreateFileDownloadTransferChannelOutput execute(final CreateFileDownloadTransferChannelInput input) {
+
+        final FileId fileId = FileId.of(input.fileId());
+        final ThroughputLimit throughputLimit = ThroughputLimit.create(input.throughputBytesLimit());
+        final Size chunkSpecificationSize = Size.of(input.chunkBytesSize());
+        final ParallelChunkLimit chunkSpecificationParallelChunkLimit = ParallelChunkLimit
+                .of(input.maxParallelChunks());
+        final ChunkSpecification chunkSpecification = ChunkSpecification
+                .create(
+                        chunkSpecificationSize,
+                        chunkSpecificationParallelChunkLimit);
+
+        final ValidationHandler handler = Notification.create();
+
+        fileId.validate(handler);
+
+        if (handler.hasErrors())
+            throw ValidationException.with("Invalid input values", handler);
+
+        final File file = fileQueryGateway
+                .findById(fileId)
+                .orElseThrow(() -> NotFoundException.create(File.class, fileId));
+
+        final TransferChannel transferChannel = handler
+                .validate(() -> file.openDownloadChannel(throughputLimit, chunkSpecification));
+
+        if (handler.hasErrors())
+            throw ValidationException.with("Failed to open download transfer channel", handler);
+
+        fileCommandGateway.update(file);
+
+        return new CreateFileDownloadTransferChannelOutput(
+                file.getId().getValue(),
+                transferChannel.getChunkSpecification().totalChunks(file.getSize()),
+                transferChannel.getChunkSpecification().effectiveChunkSize(file.getSize()).bytes(),
+                transferChannel.getChunkSpecification().lastChunkSize(file.getSize()).bytes());
+
+    }
+
+}

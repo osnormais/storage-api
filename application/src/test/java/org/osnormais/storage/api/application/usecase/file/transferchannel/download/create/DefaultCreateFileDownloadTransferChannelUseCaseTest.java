@@ -1,4 +1,4 @@
-package org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create;
+package org.osnormais.storage.api.application.usecase.file.transferchannel.download.create;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,14 +26,15 @@ import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
+import org.osnormais.storage.api.domain.file.valueobject.Publication;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 
 @ExtendWith(MockitoExtension.class)
-public class DefaultCreateFileUploadTransferChannelUseCaseTest {
+public class DefaultCreateFileDownloadTransferChannelUseCaseTest {
 
     @InjectMocks
-    DefaultCreateFileUploadTransferChannelUseCase useCase;
+    DefaultCreateFileDownloadTransferChannelUseCase useCase;
 
     @Mock
     FileQueryGateway fileQueryGateway;
@@ -42,7 +43,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
     FileCommandGateway fileCommandGateway;
 
     @Test
-    void givenAnValidInput_whenCallsExecute_thenShouldCreateUploadTransferChannel() {
+    void givenAnValidInput_whenCallsExecute_thenShouldCreateDownloadTransferChannel() {
 
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedThroughputBytesLimitValue = 1024L;
@@ -62,6 +63,8 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 expectedChunkBytesSize,
                 expectedMaxParallelChunks);
 
+        final var expectedPublication = Publication.ok();
+
         final var expectedChecksumValue = "checksumValue";
         final var expectedChecksumAlgorithm = Checksum.Algorithm.MD5;
         final var expectedCheckcum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
@@ -70,7 +73,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 expectedFileSize,
                 expectedCheckcum,
-                null,
+                expectedPublication,
                 null,
                 null,
                 null);
@@ -83,16 +86,16 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                     assertEquals(expectedFileId, file.getId());
                     assertEquals(expectedFileSize, file.getSize());
                     assertEquals(expectedCheckcum, file.getChecksum());
-                    assertTrue(file.getUploadChannel().isPresent());
+                    assertTrue(file.getDownloadChannel().isPresent());
                     assertEquals(expectedThroughputLimit,
-                            file.getUploadChannel().get().getThroughputLimit());
+                            file.getDownloadChannel().get().getThroughputLimit());
                     assertEquals(expectedChunkSpecification,
-                            file.getUploadChannel().get().getChunkSpecification());
+                            file.getDownloadChannel().get().getChunkSpecification());
                     return true;
                 })))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        final var input = new CreateFileUploadTransferChannelInput(
+        final var input = new CreateFileDownloadTransferChannelInput(
                 expectedFileIdValue,
                 expectedThroughputBytesLimitValue,
                 expectedChunkBytesSizeValue,
@@ -123,7 +126,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 File.class.getSimpleName(),
                 expectedFileId.getStringValue());
 
-        final var input = new CreateFileUploadTransferChannelInput(
+        final var input = new CreateFileDownloadTransferChannelInput(
                 expectedFileIdValue,
                 expectedThroughputBytesLimit,
                 expectedChunkBytesSize,
@@ -152,7 +155,7 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
         final Long expectedChunkBytesSize = 1024L;
         final Integer expectedMaxParallelChunks = 2;
 
-        final var input = new CreateFileUploadTransferChannelInput(
+        final var input = new CreateFileDownloadTransferChannelInput(
                 expectedFileIdValue,
                 expectedThroughputBytesLimit,
                 expectedChunkBytesSize,
@@ -167,9 +170,9 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
     }
 
     @Test
-    void givenAFileWithUploadTransferChannelAlreadyOpen_whenCallsExecute_thenShouldThrowsValidationException() {
+    void givenAFileWithDownloadTransferChannelAlreadyOpen_whenCallsExecute_thenShouldThrowsValidationException() {
 
-        final var expectedExceptionMessage = "Failed to open upload transfer channel";
+        final var expectedExceptionMessage = "Failed to open download transfer channel";
         final var expectedErrorsCount = 1;
         final var expectedErrorMessage0 = "Transfer channel already open, please close the current channel before opening a new one";
 
@@ -192,21 +195,24 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
         final var expectedChecksumAlgorithm = Checksum.Algorithm.MD5;
         final var expectedCheckcum = Checksum.of(expectedChecksumAlgorithm, expectedChecksumValue);
 
-        final var transferChannel = TransferChannel.create(expectedThroughputLimit, expectedChunkSpecification);
+        final var expectedPublication = Publication.ok();
+
+        final var uploadTransferChannel = TransferChannel.create(expectedThroughputLimit, expectedChunkSpecification);
+        final var downloadTransferChannel = TransferChannel.create(expectedThroughputLimit, expectedChunkSpecification);
 
         final var file = File.with(
                 expectedFileId,
                 expectedFileSize,
                 expectedCheckcum,
-                null,
-                transferChannel,
-                null,
+                expectedPublication,
+                uploadTransferChannel,
+                downloadTransferChannel,
                 null);
 
         when(fileQueryGateway.findById(eq(expectedFileId)))
                 .thenReturn(Optional.of(file));
 
-        final var input = new CreateFileUploadTransferChannelInput(
+        final var input = new CreateFileDownloadTransferChannelInput(
                 expectedFileIdValue,
                 expectedThroughputBytesLimitValue,
                 expectedChunkBytesSizeValue,

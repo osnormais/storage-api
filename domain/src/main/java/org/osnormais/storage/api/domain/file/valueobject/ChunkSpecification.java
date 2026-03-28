@@ -76,4 +76,22 @@ public record ChunkSpecification(
         return fullChunks + hasPartialChunk;
     }
 
+    public Long chunkOffset(final Size fileSize, final Long chunkIndex) {
+
+        if (isNull(fileSize))
+            throw InvalidArgumentException.with(DomainException.Error.with("'fileSize' should not be null"));
+
+        if (isNull(chunkIndex))
+            throw InvalidArgumentException.with(DomainException.Error.with("'chunkIndex' should not be null"));
+
+        final Long totalChunks = totalChunks(fileSize);
+
+        if (chunkIndex < 0 || chunkIndex >= totalChunks)
+            throw InvalidArgumentException.with(DomainException.Error.with("'chunkIndex' out of bounds"));
+
+        return (chunkIndex == totalChunks - 1) ? fileSize.bytes() - lastChunkSize(fileSize).bytes()
+                : (chunkIndex * size.bytes());
+
+    }
+
 }
