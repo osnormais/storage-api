@@ -1,5 +1,5 @@
 database:
-  driver: org.h2.Driver
+  driver: org.postgresql.Driver
   username: ${postgres.username}
   password: ${postgres.password}
   url: jdbc:postgresql://${postgres.host}:${postgres.port}/${postgres.database}
