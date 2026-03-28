@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
+import org.osnormais.storage.api.domain.exception.TransferChannelAlreadyOpennedException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
@@ -172,7 +173,7 @@ public class DefaultCreateFileDownloadTransferChannelUseCaseTest {
     @Test
     void givenAFileWithDownloadTransferChannelAlreadyOpen_whenCallsExecute_thenShouldThrowsValidationException() {
 
-        final var expectedExceptionMessage = "Failed to open download transfer channel";
+        final var expectedExceptionMessage = "Transfer channel already open";
         final var expectedErrorsCount = 1;
         final var expectedErrorMessage0 = "Transfer channel already open, please close the current channel before opening a new one";
 
@@ -218,7 +219,7 @@ public class DefaultCreateFileDownloadTransferChannelUseCaseTest {
                 expectedChunkBytesSizeValue,
                 expectedMaxParallelChunksValue);
 
-        final var actualException = assertThrows(ValidationException.class, () -> useCase.execute(input));
+        final var actualException = assertThrows(TransferChannelAlreadyOpennedException.class, () -> useCase.execute(input));
 
         assertEquals(expectedExceptionMessage, actualException.getMessage());
         assertEquals(expectedErrorsCount, actualException.getErrors().size());
