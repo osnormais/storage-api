@@ -44,6 +44,8 @@ public class DefaultCreateFileDownloadTransferChannelUseCase extends CreateFileD
         final ValidationHandler handler = Notification.create();
 
         fileId.validate(handler);
+        throughputLimit.validate(handler);
+        chunkSpecification.validate(handler);
 
         if (handler.hasErrors())
             throw ValidationException.with("Invalid input values", handler);
@@ -52,11 +54,7 @@ public class DefaultCreateFileDownloadTransferChannelUseCase extends CreateFileD
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        final TransferChannel transferChannel = handler
-                .validate(() -> file.openDownloadChannel(throughputLimit, chunkSpecification));
-
-        if (handler.hasErrors())
-            throw ValidationException.with("Failed to open download transfer channel", handler);
+        final TransferChannel transferChannel = file.openDownloadChannel(throughputLimit, chunkSpecification);
 
         fileCommandGateway.update(file);
 
