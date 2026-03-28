@@ -113,7 +113,10 @@ public class DraftFileController {
 
     @GetMapping("{fileId}/upload-transfer-channel")
     public ResponseEntity<RetrieveFileUploadTransferChannelOutput> retrieveFileUploadTransferChannel(
-            @RequestBody RetrieveFileUploadTransferChannelInput input) {
+            @PathVariable UUID fileId) {
+
+        final var input = new RetrieveFileUploadTransferChannelInput(fileId);
+
         return ResponseEntity
                 .ok()
                 .body(retrieveFileUploadTransferChannelUseCase.execute(input));
