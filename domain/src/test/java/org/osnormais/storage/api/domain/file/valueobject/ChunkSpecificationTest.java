@@ -15,8 +15,8 @@ public class ChunkSpecificationTest {
 
         final var expectedErrorCount = 2;
 
-        final var expetedErrorMessage1 = "Chunk 'size' should not be null";
-        final var expetedErrorMessage2 = "Chunk 'maxParallel' should not be null";
+        final var expectedErrorMessage1 = "Chunk 'size' should not be null";
+        final var expectedErrorMessage2 = "Chunk 'maxParallel' should not be null";
 
         final Size expectedChunkSize = null;
         final ParallelChunkLimit expectedParallelChunkLimit = null;
@@ -28,8 +28,8 @@ public class ChunkSpecificationTest {
         assertDoesNotThrow(() -> chunkSpecification.validate(handler));
 
         assertEquals(expectedErrorCount, handler.getErrors().size());
-        assertEquals(expetedErrorMessage1, handler.getErrors().get(0).message());
-        assertEquals(expetedErrorMessage2, handler.getErrors().get(1).message());
+        assertEquals(expectedErrorMessage1, handler.getErrors().get(0).message());
+        assertEquals(expectedErrorMessage2, handler.getErrors().get(1).message());
 
     }
 

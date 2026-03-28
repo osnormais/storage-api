@@ -27,7 +27,7 @@ public class ChunkStorageWriter implements ChunkWriter {
             InputStream inputStream) {
 
         final StorageKey chunkStorageKey = StorageKey
-                .create("files", key.getStringValue())
+                .create(key.getStringValue())
                 .subKey(
                         "upload",
                         "chunks",

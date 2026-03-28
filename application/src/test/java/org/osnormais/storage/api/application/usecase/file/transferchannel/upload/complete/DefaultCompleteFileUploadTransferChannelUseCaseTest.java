@@ -28,6 +28,7 @@ import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum.Algorithm;
@@ -35,7 +36,6 @@ import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
-import org.osnormais.storage.api.domain.file.valueobject.TransferChannel;
 
 @ExtendWith(MockitoExtension.class)
 public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
@@ -78,6 +78,7 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
                 expectedFileId,
                 Size.of(2048L),
                 Checksum.of(Algorithm.MD5, "checksumMD5"),
+                null,
                 uploadTransferChannel,
                 null,
                 null);

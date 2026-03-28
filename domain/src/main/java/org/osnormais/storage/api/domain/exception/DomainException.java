@@ -1,5 +1,7 @@
 package org.osnormais.storage.api.domain.exception;
 
+import static java.util.Objects.isNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,10 @@ public abstract class DomainException extends RuntimeException {
             final Throwable cause,
             final boolean verbose) {
         super(message, cause, enableSuppression(verbose), writableStackTrace(verbose));
-        this.errors = addCauseToErrors(errors, cause) == null ? List.of() : new ArrayList<>(errors);
+        final List<DomainException.Error> causeErrors = mapCauseToErrorList(cause);
+        this.errors = (causeErrors.isEmpty() && nonNullList(errors).isEmpty())
+                ? List.of(DomainException.Error.with(message))
+                : flat(List.of(causeErrors, errors));
     }
 
     public List<DomainException.Error> getErrors() {
@@ -35,15 +40,22 @@ public abstract class DomainException extends RuntimeException {
         return verbose ? true : false;
     }
 
-    private static List<DomainException.Error> addCauseToErrors(
-            final List<DomainException.Error> errors,
-            final Throwable cause) {
-        if (cause == null)
-            return errors;
+    private static List<DomainException.Error> mapCauseToErrorList(final Throwable cause) {
 
-        final List<DomainException.Error> result = new ArrayList<>(errors != null ? errors : List.of());
-        result.add(DomainException.Error.with(cause));
+        if (cause instanceof DomainException domainException)
+            return domainException.getErrors();
+
+        return isNull(cause) ? List.of() : List.of(DomainException.Error.with(cause));
+    }
+
+    private static <T> List<T> flat(final List<List<T>> lists) {
+        final List<T> result = new ArrayList<>();
+        lists.forEach(list -> result.addAll(nonNullList(list)));
         return result;
+    }
+
+    private static <T> List<T> nonNullList(final List<T> list) {
+        return isNull(list) ? List.of() : list;
     }
 
     public record Error(String message) {
