@@ -1,0 +1,15 @@
+database:
+  driver: org.postgresql.Driver
+  username: ${postgres.username}
+  password: ${postgres.password}
+  url: jdbc:postgresql://${postgres.host}:${postgres.port}/${postgres.database}
+  hibernate:
+    ddl-auto: ${HIBERNATE_DDL_AUTO:none}
+  show-sql: ${SHOW_SQL:false}
+
+postgres:
+  host: ${POSTGRES_HOST}
+  port: ${POSTGRES_PORT}
+  username: ${POSTGRES_USER}
+  password: ${POSTGRES_PASS}
+  database: ${POSTGRES_DATABASE}

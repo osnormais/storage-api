@@ -4,6 +4,7 @@ spring:
   profiles:
     active:
       - spring-cloud
+      - hibernate
       - ${application.vendor.messaging}
       - ${application.vendor.concurrency-tracker}
       - ${application.vendor.database}
@@ -20,6 +21,6 @@ application:
         max-attempts: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_MAX_ATTEMPTS:5}
   vendor:
     concurrency-tracker: ${VENDOR_CONCURRENCY_TRACKER:inmemory}
-    database: ${VENDOR_DATABASE:inmemory}
+    database: ${VENDOR_DATABASE:h2}
     storage: ${VENDOR_STORAGE:fs}
     messaging: ${VENDOR_MESSAGING:rabbitmq}
