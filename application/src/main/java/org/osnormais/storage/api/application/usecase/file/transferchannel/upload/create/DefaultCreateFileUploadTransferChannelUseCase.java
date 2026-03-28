@@ -47,6 +47,8 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
                         chunkSpecificationParallelChunkLimit);
 
         fileId.validate(handler);
+        throughputLimit.validate(handler);
+        chunkSpecification.validate(handler);
 
         if (handler.hasErrors())
             throw ValidationException.with("Invalid input values", handler);
@@ -55,11 +57,7 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        final TransferChannel transferChannel = handler
-                .validate(() -> file.openUploadChannel(throughputLimit, chunkSpecification));
-
-        if (handler.hasErrors())
-            throw ValidationException.with("Failed to open upload transfer channel", handler);
+        final TransferChannel transferChannel = file.openUploadChannel(throughputLimit, chunkSpecification);
 
         fileCommandGateway.update(file);
 
