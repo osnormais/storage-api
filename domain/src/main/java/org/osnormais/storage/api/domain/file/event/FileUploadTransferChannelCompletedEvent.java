@@ -15,6 +15,9 @@ public class FileUploadTransferChannelCompletedEvent extends DomainEvent<FileId>
     private static final String SUB_RESOURCE = "upload-transfer-channel";
     private static final String ACTION = "completed";
 
+    FileUploadTransferChannelCompletedEvent() {
+    }
+
     private FileUploadTransferChannelCompletedEvent(
             final File file,
             final Instant occurredAt,

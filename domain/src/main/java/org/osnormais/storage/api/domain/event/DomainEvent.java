@@ -3,34 +3,45 @@ package org.osnormais.storage.api.domain.event;
 import static java.util.Objects.isNull;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.osnormais.storage.api.domain.Entity;
 import org.osnormais.storage.api.domain.Identifier;
 
 public abstract class DomainEvent<I extends Identifier<?>> {
 
-    private static final String DOMAIN = "storage";
+    private static final String DOMAIN = "drive";
 
-    private final I identifier;
-    private final String domain;
-    private final String entity;
-    private final String action;
-    private final Instant occurredAt;
-    private final Set<DomainEventEntity> relatedEntities;
+    private I identifier;
+    private String domain;
+    private String entity;
+    private String action;
+    private Instant occurredAt;
+    private Set<DomainEventEntity> relatedEntities;
+
+    protected DomainEvent() {
+    }
 
     protected <E extends Entity<I>> DomainEvent(
             final E entity,
             final String subResource,
             final String action,
             final Instant occurredAt,
-            final Set<DomainEventEntity> relatedEntities) {
+            final Collection<DomainEventEntity> relatedEntities) {
+
         this.identifier = entity.getId();
         this.domain = DOMAIN;
         this.entity = DomainEvent.entity(entity.getClass(), subResource);
         this.action = action;
         this.occurredAt = occurredAt;
-        this.relatedEntities = isNull(relatedEntities) ? Set.of() : Set.copyOf(relatedEntities);
+        this.relatedEntities = isNull(relatedEntities) ? Set.of()
+                : relatedEntities
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
     }
 
     protected static String key(

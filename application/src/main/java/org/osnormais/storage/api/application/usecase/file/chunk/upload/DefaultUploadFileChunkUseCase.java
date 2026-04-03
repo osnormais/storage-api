@@ -2,6 +2,7 @@ package org.osnormais.storage.api.application.usecase.file.chunk.upload;
 
 import java.io.InputStream;
 
+import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.exception.ChunkIntegrityViolationException;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
@@ -32,6 +33,7 @@ public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
         this.chunkWriter = chunkWriter;
     }
 
+    @Transactional
     @Override
     public void execute(final UploadFileChunkInput input) {
 

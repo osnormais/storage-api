@@ -2,6 +2,7 @@ package org.osnormais.storage.api.application.usecase.file.create;
 
 import static java.util.Objects.requireNonNull;
 
+import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.File;
@@ -19,6 +20,7 @@ public class DefaultCreateFileUseCase extends CreateFileUseCase {
         this.fileCommandGateway = requireNonNull(fileCommandGateway);
     }
 
+    @Transactional
     @Override
     public CreateFileOutput execute(final CreateFileInput input) {
 

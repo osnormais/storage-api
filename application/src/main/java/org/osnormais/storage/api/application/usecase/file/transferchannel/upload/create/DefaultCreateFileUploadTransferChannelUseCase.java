@@ -2,6 +2,7 @@ package org.osnormais.storage.api.application.usecase.file.transferchannel.uploa
 
 import static java.util.Objects.requireNonNull;
 
+import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
@@ -28,6 +29,7 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
         this.fileCommandGateway = requireNonNull(fileCommandGateway);
     }
 
+    @Transactional
     @Override
     public CreateFileUploadTransferChannelOutput execute(final CreateFileUploadTransferChannelInput input) {
 

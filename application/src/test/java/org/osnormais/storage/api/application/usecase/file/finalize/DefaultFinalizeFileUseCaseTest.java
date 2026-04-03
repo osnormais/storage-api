@@ -23,6 +23,7 @@ import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.application.port.FileFinalizer;
+import org.osnormais.storage.api.domain.event.DomainEventContext;
 import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.osnormais.storage.api.domain.exception.FileAlreadyPublishedException;
 import org.osnormais.storage.api.domain.file.File;
@@ -73,6 +74,8 @@ public class DefaultFinalizeFileUseCaseTest {
                 null,
                 null);
 
+        final var expectedDomainContext = DomainEventContext.create();
+
         when(fileQueryGateway.findById(expectedFileId))
                 .thenReturn(Optional.of(expectedFile));
 
@@ -82,9 +85,12 @@ public class DefaultFinalizeFileUseCaseTest {
         when(fileFinalizer.finalize(expectedFile))
                 .thenReturn(expectedFileChecksum);
 
+        when(eventDispatcher.append(expectedFile))
+                .thenReturn(expectedDomainContext);
+
         doNothing()
                 .when(eventDispatcher)
-                .notify(expectedFile);
+                .dispatch(expectedDomainContext);
 
         final var input = new FinalizeFileInput(expectedFileIdValue);
 
@@ -96,8 +102,8 @@ public class DefaultFinalizeFileUseCaseTest {
         verify(fileCommandGateway, times(1)).update(any());
 
         ArgumentCaptor<File> captor = ArgumentCaptor.forClass(File.class);
-        verify(eventDispatcher, times(1)).notify(captor.capture());
-        verify(eventDispatcher, times(1)).notify(any(File.class));
+        verify(eventDispatcher, times(1)).append(captor.capture());
+        verify(eventDispatcher, times(1)).append(any(File.class));
 
         final var eventDispatcherArg = captor.getValue();
         final var firstEvent = eventDispatcherArg.nextEvent();
@@ -139,7 +145,7 @@ public class DefaultFinalizeFileUseCaseTest {
         verify(fileQueryGateway, times(1)).findById(any());
         verify(fileCommandGateway, times(0)).update(any());
         verify(fileFinalizer, times(0)).finalize(any());
-        verify(eventDispatcher, times(0)).notify(any(File.class));
+        verify(eventDispatcher, times(0)).append(any(File.class));
 
     }
 
@@ -181,7 +187,7 @@ public class DefaultFinalizeFileUseCaseTest {
         verify(fileQueryGateway, times(1)).findById(any());
         verify(fileCommandGateway, times(0)).update(any());
         verify(fileFinalizer, times(0)).finalize(any());
-        verify(eventDispatcher, times(0)).notify(any(File.class));
+        verify(eventDispatcher, times(0)).append(any(File.class));
 
     }
 

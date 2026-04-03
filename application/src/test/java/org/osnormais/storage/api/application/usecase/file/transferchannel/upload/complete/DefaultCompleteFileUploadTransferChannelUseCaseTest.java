@@ -23,7 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
-import org.osnormais.storage.api.domain.event.DomainEvent;
+import org.osnormais.storage.api.domain.event.DomainEventContext;
 import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.file.File;
@@ -83,15 +83,20 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
                 null,
                 null);
 
+        final var expectedDomainContext = DomainEventContext.create();
+
         when(fileQueryGateway.findById(expectedFileId))
                 .thenReturn(Optional.of(expectedFile));
 
         when(fileCommandGateway.update(expectedFile))
                 .thenAnswer(returnsFirstArg());
 
+        when(eventDispatcher.append(expectedFile))
+                .thenReturn(expectedDomainContext);
+
         doNothing()
                 .when(eventDispatcher)
-                .notify(expectedFile);
+                .dispatch(expectedDomainContext);
 
         final var input = new CompleteFileUploadTransferChannelInput(expectedFileIdValue);
 
@@ -103,8 +108,8 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
         verify(fileCommandGateway, times(1)).update(any());
 
         ArgumentCaptor<File> captor = ArgumentCaptor.forClass(File.class);
-        verify(eventDispatcher, times(1)).notify(captor.capture());
-        verify(eventDispatcher, times(1)).notify(any(File.class));
+        verify(eventDispatcher, times(1)).append(captor.capture());
+        verify(eventDispatcher, times(1)).append(any(File.class));
 
         final var eventDispatcherArg = captor.getValue();
         final var firstEvent = eventDispatcherArg.nextEvent();
@@ -119,7 +124,6 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void givenAInexistentFileId_whenCallsExecute_thenShouldThrowsNotFoundException() {
 
         final var expectedFileIdValue = UUID.randomUUID();
@@ -134,8 +138,7 @@ public class DefaultCompleteFileUploadTransferChannelUseCaseTest {
 
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
         verify(fileCommandGateway, times(0)).update(any());
-        verify(eventDispatcher, times(0)).notify(any(DomainEventSource.class));
-        verify(eventDispatcher, times(0)).notify(any(DomainEvent.class));
+        verify(eventDispatcher, times(0)).append(any(DomainEventSource.class));
 
     }
 

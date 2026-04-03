@@ -1,5 +1,6 @@
 package org.osnormais.storage.api.application.usecase.file.chunk.download;
 
+import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
@@ -28,6 +29,7 @@ public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
         this.chunkReader = chunkReader;
     }
 
+    @Transactional
     @Override
     public DownloadFileChunkOutput execute(final DownloadFileChunkInput input) {
 

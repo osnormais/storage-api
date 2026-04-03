@@ -149,7 +149,7 @@ public class DefaultCreateFileDownloadTransferChannelUseCaseTest {
 
         final var expectedExceptionMessage = "Invalid input values";
         final var expectedErrorsCount = 1;
-        final var expectedErrorMessage = "'id' should not be null";
+        final var expectedErrorMessage = "'Identifier.value' should not be null";
 
         final UUID expectedFileIdValue = null;
         final Long expectedThroughputBytesLimit = 1024L;

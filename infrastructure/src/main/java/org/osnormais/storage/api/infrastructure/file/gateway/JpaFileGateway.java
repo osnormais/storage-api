@@ -9,6 +9,7 @@ import org.osnormais.storage.api.domain.file.FileId;
 import org.osnormais.storage.api.infrastructure.file.persistence.FileJpaEntity;
 import org.osnormais.storage.api.infrastructure.file.persistence.FileJpaRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
@@ -20,6 +21,7 @@ public class JpaFileGateway implements FileCommandGateway, FileQueryGateway {
         this.fileRepository = fileRepository;
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     @Override
     public Optional<File> findById(final FileId id) {
         return fileRepository
@@ -27,7 +29,7 @@ public class JpaFileGateway implements FileCommandGateway, FileQueryGateway {
                 .map(FileJpaEntity::toDomain);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     @Override
     public File create(final File file) {
 
@@ -39,7 +41,7 @@ public class JpaFileGateway implements FileCommandGateway, FileQueryGateway {
         return file;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     @Override
     public File update(final File file) {
 
