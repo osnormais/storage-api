@@ -2,6 +2,7 @@ package org.osnormais.storage.api.infrastructure.configuration.messaging;
 
 import static java.util.Objects.requireNonNull;
 
+import org.osnormais.storage.api.infrastructure.file.data.message.DriveFileIntegrationMessage;
 import org.osnormais.storage.api.infrastructure.file.data.message.FileUploadTransferChannelCompletedMessage;
 import org.osnormais.storage.api.infrastructure.messaging.producer.MessageProducer;
 import org.osnormais.storage.api.infrastructure.messaging.producer.springcloud.SpringCloudMessageProducer;
@@ -28,6 +29,11 @@ public class MessageProducerConfig {
     @Bean
     MessageProducer<FileUploadTransferChannelCompletedMessage> fileUploadTransferChannelCompletedError() {
         return new SpringCloudMessageProducer<>(streamBridge, "fileUploadTransferChannelCompletedError-out-0");
+    }
+
+    @Bean
+    MessageProducer<DriveFileIntegrationMessage> driveFileCreatedError() {
+        return new SpringCloudMessageProducer<>(streamBridge, "driveFileCreatedError-out-0");
     }
 
 }

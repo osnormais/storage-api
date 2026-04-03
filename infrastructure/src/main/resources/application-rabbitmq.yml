@@ -2,34 +2,32 @@ spring:
   cloud:
     stream:
       binders:
-        storage-binder:
+        private-binder:
           type: rabbit
           environment:
             spring:
               rabbitmq:
                 host: ${rabbitmq.host}
                 port: ${rabbitmq.port}
-                virtual-host: ${rabbitmq.virtual-host}
+                virtual-host: ${rabbitmq.private-virtual-host}
                 username: ${rabbitmq.username}
                 password: ${rabbitmq.password}
-      default-binder: storage-binder
+        public-binder:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: ${rabbitmq.host}
+                port: ${rabbitmq.port}
+                virtual-host: ${rabbitmq.public-virtual-host}
+                username: ${rabbitmq.username}
+                password: ${rabbitmq.password}
+      default-binder: private-binder
       rabbit:
         bindings:
-          ## --------------------------------------- ##
-          #  File Upload Transfer Channel Completed   #
-          ## Outgoing RabbitMQ bindings ------------ ##
-          fileUploadTransferChannelCompleted-out-0:
-            producer:
-              exchangeType: topic
-              destination: storage.exchange
-              routingKeyExpression: "'storage.file:upload-transfer-channel.completed'"
-          fileUploadTransferChannelCompletedError-out-0:
-            producer:
-              exchangeType: topic
-              destination: storage.exchange.error
-              routingKeyExpression: "'storage.file:upload-transfer-channel.completed'"
-              queueNameGroupOnly: true
-          ## Incoming RabbitMQ bindings ------------ ##
+          ###### -------- DOMAIN EVENTS -------- ######
+          ## RabbitMQ bindings                       ##
+          # Incoming <- File Upload Completed         #
           fileUploadTransferChannelCompleted-in-0:
             consumer:
               exchangeType: topic
@@ -43,10 +41,49 @@ spring:
               republishToDlq: false
               dlqTtl: 5000
           ## --------------------------------------- ##
+          # Outgoing -> File Upload Completed         #
+          fileUploadTransferChannelCompleted-out-0:
+            producer:
+              exchangeType: topic
+              destination: storage.exchange
+              routingKeyExpression: "'storage.file:upload-transfer-channel.completed'"
+          fileUploadTransferChannelCompletedError-out-0:
+            producer:
+              exchangeType: topic
+              destination: storage.exchange.error
+              routingKeyExpression: "'storage.file:upload-transfer-channel.completed'"
+              queueNameGroupOnly: true
+          ## --------------------------------------- ##
+          ###### ------- PUBLIC MESSAGES ------- ######
+          ## --------------------------------------- ##
+          # Incoming <- File Created                  #
+          driveFileCreated-in-0:
+            consumer:
+              exchangeType: topic
+              bindingRoutingKey: drive.file.created
+              queueNameGroupOnly: true
+              autoBindDlq: true
+              deadLetterExchange: storage.exchange.wait
+              deadLetterQueueName: storage.drive.file.created.queue.wait
+              dlqDeadLetterExchange: storage.exchange
+              dlqDeadLetterRoutingKey: drive.file.created
+              republishToDlq: false
+              dlqTtl: 1000
+          ## --------------------------------------- ##
+          ## --------------------------------------- ##
+          # Outgoing -> File Upload Completed         #
+          driveFileCreatedError-out-0:
+            producer:
+              exchangeType: topic
+              destination: storage.exchange.error
+              routingKeyExpression: "'drive.file.created'"
+              queueNameGroupOnly: true
+          ## --------------------------------------- ##
 
 rabbitmq:
   host: ${RABBITMQ_HOST:localhost}
   port: ${RABBITMQ_PORT:5672}
-  virtual-host: ${RABBITMQ_VIRTUAL_HOST:/}
+  private-virtual-host: ${RABBITMQ_PRIVATE_VIRTUAL_HOST:/}
+  public-virtual-host: ${RABBITMQ_PUBLIC_VIRTUAL_HOST:/}
   username: ${RABBITMQ_USERNAME:rabbitmq}
   password: ${RABBITMQ_PASSWORD:rabbitmq}
