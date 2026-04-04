@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileInput;
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileUseCase;
+import org.osnormais.storage.api.infrastructure.exception.ResourceAlreadyExistsException;
 import org.osnormais.storage.api.infrastructure.file.data.message.DriveFileIntegrationMessage;
 import org.osnormais.storage.api.infrastructure.messaging.consumer.rabbitmq.RabbitMQMessageConsumer;
 import org.osnormais.storage.api.infrastructure.messaging.producer.MessageProducer;
@@ -20,7 +21,7 @@ public class DriveFileCreatedConsumer
             final Long maxRetryAttempts,
             final MessageProducer<DriveFileIntegrationMessage> errorMessageProducer,
             final CreateFileUseCase createFileUseCase) {
-        super(maxRetryAttempts, errorMessageProducer, Set.of());
+        super(maxRetryAttempts, errorMessageProducer, Set.of(ResourceAlreadyExistsException.class));
         this.createFileUseCase = requireNonNull(createFileUseCase);
     }
 

@@ -6,6 +6,7 @@ import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.infrastructure.exception.ResourceAlreadyExistsException;
 import org.osnormais.storage.api.infrastructure.file.persistence.FileJpaEntity;
 import org.osnormais.storage.api.infrastructure.file.persistence.FileJpaRepository;
 import org.springframework.stereotype.Component;
@@ -34,7 +35,8 @@ public class JpaFileGateway implements FileCommandGateway, FileQueryGateway {
     public File create(final File file) {
 
         if (fileRepository.existsById(file.getId().getValue()))
-            throw new IllegalStateException("File with id %s already exists".formatted(file.getId().getStringValue()));
+            throw ResourceAlreadyExistsException
+                    .with("File with id %s already exists".formatted(file.getId().getStringValue()));
 
         save(file);
 

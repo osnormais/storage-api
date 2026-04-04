@@ -64,7 +64,7 @@ spring:
               queueNameGroupOnly: true
               autoBindDlq: true
               deadLetterExchange: storage.exchange.wait
-              deadLetterQueueName: storage.drive.file.created.queue.wait
+              deadLetterQueueName: drive:storage.file.created.queue.wait
               dlqDeadLetterExchange: storage.exchange
               dlqDeadLetterRoutingKey: drive.file.created
               republishToDlq: false

@@ -34,14 +34,15 @@ spring:
         driveFileCreated-in-0:
           binder: public-binder
           destination: storage.exchange
-          group: storage.drive.file.created.queue
+          group: drive:storage.file.created.queue
           consumer:
             max-attempts: 1
             concurrency: ${application.messaging.public.consumer.drive-file-created.concurrency}
         ## --------------------------------------- ##
         # Outgoing -> File Upload Completed         #
         driveFileCreatedError-out-0:
+          binder: public-binder
           destination: storage.exchange.error
           producer:
-            requiredGroups: storage.drive.file.created.queue.error
+            requiredGroups: drive:storage.file.created.queue.error
         ## --------------------------------------- ##

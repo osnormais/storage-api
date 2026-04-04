@@ -6,7 +6,10 @@ public class ExceptionWrapper extends RuntimeException {
         super(null, cause, true, false);
     }
 
-    public static ExceptionWrapper wrap(final Throwable cause) {
+    public static RuntimeException wrap(final Throwable cause) {
+        if (cause instanceof RuntimeException)
+            return (RuntimeException) cause;
+
         return new ExceptionWrapper(cause);
     }
 
