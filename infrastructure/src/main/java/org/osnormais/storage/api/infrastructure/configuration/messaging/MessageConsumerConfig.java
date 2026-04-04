@@ -21,7 +21,7 @@ public class MessageConsumerConfig {
     @Bean
     Consumer<Message<FileUploadTransferChannelCompletedMessage>> fileUploadTransferChannelCompletedConsumer(
             @Value("${application.messaging.private.consumer.file-upload-transfer-channel-completed.max-attempts}") final Long maxAttempts,
-            @Qualifier("fileUploadTransferChannelCompletedError") final MessageProducer<FileUploadTransferChannelCompletedMessage> errorMessageProducer,
+            @Qualifier("fileUploadTransferChannelCompletedError") final MessageProducer<Message<FileUploadTransferChannelCompletedMessage>> errorMessageProducer,
             final FinalizeFileUseCase finalizeFileUseCase) {
         return new FileUploadTransferChannelCompletedConsumer(
                 maxAttempts,
@@ -32,7 +32,7 @@ public class MessageConsumerConfig {
     @Bean
     Consumer<Message<DriveFileIntegrationMessage>> driveFileCreatedConsumer(
             @Value("${application.messaging.public.consumer.drive-file-created.max-attempts}") final Long maxAttempts,
-            @Qualifier("driveFileCreatedError") final MessageProducer<DriveFileIntegrationMessage> errorMessageProducer,
+            @Qualifier("driveFileCreatedError") final MessageProducer<Message<DriveFileIntegrationMessage>> errorMessageProducer,
             final CreateFileUseCase createFileUseCase) {
         return new DriveFileCreatedConsumer(
                 maxAttempts,

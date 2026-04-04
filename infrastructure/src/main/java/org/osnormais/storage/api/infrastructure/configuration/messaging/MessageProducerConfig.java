@@ -10,6 +10,7 @@ import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.messaging.Message;
 
 @Configuration
 public class MessageProducerConfig {
@@ -27,12 +28,12 @@ public class MessageProducerConfig {
     }
 
     @Bean
-    MessageProducer<FileUploadTransferChannelCompletedMessage> fileUploadTransferChannelCompletedError() {
+    MessageProducer<Message<FileUploadTransferChannelCompletedMessage>> fileUploadTransferChannelCompletedError() {
         return new SpringCloudMessageProducer<>(streamBridge, "fileUploadTransferChannelCompletedError-out-0");
     }
 
     @Bean
-    MessageProducer<DriveFileIntegrationMessage> driveFileCreatedError() {
+    MessageProducer<Message<DriveFileIntegrationMessage>> driveFileCreatedError() {
         return new SpringCloudMessageProducer<>(streamBridge, "driveFileCreatedError-out-0");
     }
 

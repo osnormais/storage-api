@@ -19,7 +19,7 @@ public class DriveFileCreatedConsumer
 
     public DriveFileCreatedConsumer(
             final Long maxRetryAttempts,
-            final MessageProducer<DriveFileIntegrationMessage> errorMessageProducer,
+            final MessageProducer<Message<DriveFileIntegrationMessage>> errorMessageProducer,
             final CreateFileUseCase createFileUseCase) {
         super(maxRetryAttempts, errorMessageProducer, Set.of(ResourceAlreadyExistsException.class));
         this.createFileUseCase = requireNonNull(createFileUseCase);
