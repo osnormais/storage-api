@@ -94,7 +94,7 @@ public class DefaultDownloadFileChunkUseCaseTest {
 
         final var expectedDownloadTransferChannelIdValue = UUID.randomUUID();
         final var expectedDownloadTransferChannelId = TransferChannelId.of(expectedDownloadTransferChannelIdValue);
-        final var expectedDownloadTransferChannelStatus = TransferChannelStatus.CLOSED;
+        final var expectedDownloadTransferChannelStatus = TransferChannelStatus.OPENED;
 
         final var expectedDownloadTransferChannel = TransferChannel.with(
                 expectedDownloadTransferChannelId,
@@ -208,7 +208,7 @@ public class DefaultDownloadFileChunkUseCaseTest {
 
         final var expectedDownloadTransferChannelIdValue = UUID.randomUUID();
         final var expectedDownloadTransferChannelId = TransferChannelId.of(expectedDownloadTransferChannelIdValue);
-        final var expectedDownloadTransferChannelStatus = TransferChannelStatus.CLOSED;
+        final var expectedDownloadTransferChannelStatus = TransferChannelStatus.OPENED;
 
         final var expectedDownloadTransferChannel = TransferChannel.with(
                 expectedDownloadTransferChannelId,
