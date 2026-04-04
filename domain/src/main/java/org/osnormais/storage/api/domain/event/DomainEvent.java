@@ -13,7 +13,7 @@ import org.osnormais.storage.api.domain.Identifier;
 
 public abstract class DomainEvent<I extends Identifier<?>> {
 
-    private static final String DOMAIN = "drive";
+    private static final String DOMAIN = "storage";
 
     private I identifier;
     private String domain;
