@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.osnormais.storage.api.domain.event.DomainEventContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface OutboxJpaRepository extends JpaRepository<OutboxJpa, UUID> {
 
@@ -21,6 +22,6 @@ public interface OutboxJpaRepository extends JpaRepository<OutboxJpa, UUID> {
             group by o.contextId
             order by min(o.registeredAt) asc
                      """)
-    List<DomainEventContext> findAllContextPending(Instant cutoff);
+    List<DomainEventContext> findAllContextPending(@Param("cutoff") Instant cutoff);
 
 }

@@ -25,7 +25,7 @@ public class OutboxRelayWorker {
     }
 
     @Transactional
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 10000)
     public void retryPendingOutboxEvents() {
 
         outboxGateway

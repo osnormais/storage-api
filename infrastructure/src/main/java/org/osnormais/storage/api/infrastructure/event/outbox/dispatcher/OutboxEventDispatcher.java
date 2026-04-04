@@ -5,12 +5,14 @@ import static java.util.Objects.requireNonNull;
 import java.util.Comparator;
 import java.util.List;
 
+import org.osnormais.storage.api.application.port.ConcurrencyTracker;
 import org.osnormais.storage.api.domain.Identifier;
 import org.osnormais.storage.api.domain.event.DomainEvent;
 import org.osnormais.storage.api.domain.event.DomainEventContext;
 import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.infrastructure.configuration.mapper.Mapper;
+import org.osnormais.storage.api.infrastructure.event.outbox.OutboxId;
 import org.osnormais.storage.api.infrastructure.event.outbox.gateway.OutboxJpaGateway;
 import org.osnormais.storage.api.infrastructure.event.outbox.persistence.OutboxJpa;
 import org.osnormais.storage.api.infrastructure.exception.ExceptionWrapper;
@@ -23,9 +25,11 @@ public class OutboxEventDispatcher extends DomainEventDispatcher {
 
     private final ObjectMapper mapper = Mapper.mapper();
     private final OutboxJpaGateway outboxGateway;
+    private final ConcurrencyTracker concurrencyTracker;
 
-    public OutboxEventDispatcher(final OutboxJpaGateway outboxGateway) {
+    public OutboxEventDispatcher(final OutboxJpaGateway outboxGateway, final ConcurrencyTracker concurrencyTracker) {
         this.outboxGateway = requireNonNull(outboxGateway);
+        this.concurrencyTracker = requireNonNull(concurrencyTracker);
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
@@ -83,12 +87,23 @@ public class OutboxEventDispatcher extends DomainEventDispatcher {
             outBoxEvents.forEach(
                     event -> {
 
-                        handlerFor(event.getEventKey())
-                                .stream()
-                                .filter(handler -> handler.supports(event.getEventKey()))
-                                .forEach(handler -> handler.handle(convert(event)));
+                        if (1 <= concurrencyTracker.getCurrentCount(OutboxId.of(event.getId())))
+                            return;
 
-                        outboxGateway.delete(event.getId());
+                        concurrencyTracker.increment(OutboxId.of(event.getId()));
+
+                        try {
+
+                            handlerFor(event.getEventKey())
+                                    .stream()
+                                    .filter(handler -> handler.supports(event.getEventKey()))
+                                    .forEach(handler -> handler.handle(convert(event)));
+
+                            outboxGateway.delete(event.getId());
+
+                        } finally {
+                            concurrencyTracker.decrement(OutboxId.of(event.getId()));
+                        }
 
                     });
 
