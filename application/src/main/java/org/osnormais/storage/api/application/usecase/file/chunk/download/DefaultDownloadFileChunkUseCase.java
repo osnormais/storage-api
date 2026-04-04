@@ -42,6 +42,7 @@ public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
 
         final TransferChannel downloadChannel = file
                 .getDownloadChannel()
+                .filter(TransferChannel::isOpen)
                 .orElseThrow(() -> TransferChannelNotAvailableException.download(fileId));
 
         final Size fileSize = file.getSize();
