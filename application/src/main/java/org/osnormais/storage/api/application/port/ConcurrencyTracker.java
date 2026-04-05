@@ -17,6 +17,10 @@ public class ConcurrencyTracker {
         this.tags = isNull(tags) ? new String[0] : tags.clone();
     }
 
+    public Boolean tryIncrement(Identifier<?> key, int maxConcurrent) {
+        return port.tryIncrement(key, maxConcurrent, tags);
+    }
+
     public void increment(final Identifier<?> key) {
         port.increment(key, tags);
     }
@@ -30,6 +34,8 @@ public class ConcurrencyTracker {
     }
 
     public interface Port {
+
+        Boolean tryIncrement(Identifier<?> key, int maxConcurrent, String... tags);
 
         void increment(Identifier<?> key, String... tags);
 

@@ -87,10 +87,8 @@ public class OutboxEventDispatcher extends DomainEventDispatcher {
             outBoxEvents.forEach(
                     event -> {
 
-                        if (1 <= concurrencyTracker.getCurrentCount(OutboxId.of(event.getId())))
+                        if (!concurrencyTracker.tryIncrement(OutboxId.of(event.getId()), 1))
                             return;
-
-                        concurrencyTracker.increment(OutboxId.of(event.getId()));
 
                         try {
 

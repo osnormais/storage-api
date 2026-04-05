@@ -16,8 +16,9 @@ import org.springframework.data.redis.core.script.RedisScript;
 public class RedisConcurrencyTrackerPort implements ConcurrencyTracker.Port {
 
     private final RedisTemplate<String, Integer> redisTemplate;
-    private final RedisScript<Integer> decrementPositiveScript;
+    private final RedisScript<Boolean> tryIncrementScript;
     private final RedisScript<Integer> incrementScript;
+    private final RedisScript<Integer> decrementPositiveScript;
     private final ValueOperations<String, Integer> valueOperations;
     private final String ttl;
 
@@ -27,8 +28,18 @@ public class RedisConcurrencyTrackerPort implements ConcurrencyTracker.Port {
         this.redisTemplate = requireNonNull(redisTemplate);
         this.valueOperations = this.redisTemplate.opsForValue();
         this.ttl = String.valueOf(Math.max(1, requireNonNull(ttl).getSeconds()));
-        this.decrementPositiveScript = decrementPositiveScript();
+        this.tryIncrementScript = tryIncrementScript();
         this.incrementScript = incrementScript();
+        this.decrementPositiveScript = decrementPositiveScript();
+    }
+
+    @Override
+    public Boolean tryIncrement(Identifier<?> key, int maxConcurrent, String... tags) {
+        return Boolean.TRUE.equals(redisTemplate.execute(
+                tryIncrementScript,
+                Collections.singletonList(buildKey(key, tags)),
+                String.valueOf(maxConcurrent),
+                ttl));
     }
 
     @Override
@@ -61,6 +72,19 @@ public class RedisConcurrencyTrackerPort implements ConcurrencyTracker.Port {
                 sb.append(":").append(tag);
 
         return sb.toString();
+    }
+
+    private static RedisScript<Boolean> tryIncrementScript() {
+        return new DefaultRedisScript<>("""
+                local current = tonumber(redis.call('get', KEYS[1])) or 0
+                local max = tonumber(ARGV[1])
+                if current < max then
+                    redis.call('incr', KEYS[1])
+                    redis.call('expire', KEYS[1], ARGV[2])
+                    return 1
+                end
+                return 0
+                """, Boolean.class);
     }
 
     private static RedisScript<Integer> decrementPositiveScript() {

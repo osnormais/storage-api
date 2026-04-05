@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
@@ -18,6 +19,21 @@ import org.springframework.stereotype.Component;
 public class InMemoryConcurrencyTrackerPort implements ConcurrencyTracker.Port {
 
     private final ConcurrentMap<Key, AtomicInteger> counters = new ConcurrentHashMap<>();
+
+    @Override
+    public Boolean tryIncrement(Identifier<?> key, int maxConcurrent, String... tags) {
+        final Key mapKey = new Key(key, tags);
+        final AtomicBoolean acquired = new AtomicBoolean(false);
+        counters.compute(mapKey, (k, counter) -> {
+            int current = counter != null ? counter.get() : 0;
+            if (current < maxConcurrent) {
+                acquired.set(true);
+                return new AtomicInteger(current + 1);
+            }
+            return counter;
+        });
+        return acquired.get();
+    }
 
     @Override
     public void increment(final Identifier<?> key, final String... tags) {
