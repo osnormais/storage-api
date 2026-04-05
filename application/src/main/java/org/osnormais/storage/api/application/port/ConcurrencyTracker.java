@@ -7,14 +7,18 @@ import org.osnormais.storage.api.domain.Identifier;
 
 public class ConcurrencyTracker {
 
-    private final Port port;
+    private final ConcurrencyTracker.Port port;
     private final String[] tags;
 
     public ConcurrencyTracker(
-            final Port port,
+            final ConcurrencyTracker.Port port,
             final String... tags) {
         this.port = requireNonNull(port);
         this.tags = isNull(tags) ? new String[0] : tags.clone();
+    }
+
+    public Boolean tryIncrement(Identifier<?> key, int maxConcurrent) {
+        return port.tryIncrement(key, maxConcurrent, tags);
     }
 
     public void increment(final Identifier<?> key) {
@@ -30,6 +34,8 @@ public class ConcurrencyTracker {
     }
 
     public interface Port {
+
+        Boolean tryIncrement(Identifier<?> key, int maxConcurrent, String... tags);
 
         void increment(Identifier<?> key, String... tags);
 

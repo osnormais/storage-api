@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.osnormais.storage.api.application.usecase.file.finalize.FinalizeFileInput;
 import org.osnormais.storage.api.application.usecase.file.finalize.FinalizeFileUseCase;
+import org.osnormais.storage.api.domain.exception.FileAlreadyPublishedException;
 import org.osnormais.storage.api.infrastructure.file.data.message.FileUploadTransferChannelCompletedMessage;
 import org.osnormais.storage.api.infrastructure.messaging.consumer.rabbitmq.RabbitMQMessageConsumer;
 import org.osnormais.storage.api.infrastructure.messaging.producer.MessageProducer;
@@ -18,9 +19,9 @@ public class FileUploadTransferChannelCompletedConsumer
 
     public FileUploadTransferChannelCompletedConsumer(
             final Long maxRetryAttempts,
-            final MessageProducer<FileUploadTransferChannelCompletedMessage> errorMessageProducer,
+            final MessageProducer<Message<FileUploadTransferChannelCompletedMessage>> errorMessageProducer,
             final FinalizeFileUseCase finalizeFileUseCase) {
-        super(maxRetryAttempts, errorMessageProducer, Set.of());
+        super(maxRetryAttempts, errorMessageProducer, Set.of(FileAlreadyPublishedException.class));
         this.finalizeFileUseCase = requireNonNull(finalizeFileUseCase);
     }
 

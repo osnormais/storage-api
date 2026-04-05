@@ -27,8 +27,12 @@ dependencies {
     implementation 'org.postgresql:postgresql:42.7.10'
     implementation 'com.h2database:h2:2.4.240'
 
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     implementation 'org.springframework.cloud:spring-cloud-stream'
     implementation 'org.springframework.cloud:spring-cloud-starter-stream-rabbit'
+
+    implementation 'org.aspectj:aspectjrt:1.9.25.1'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
 

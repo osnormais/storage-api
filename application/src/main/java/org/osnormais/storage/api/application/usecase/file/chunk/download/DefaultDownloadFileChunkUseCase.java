@@ -1,5 +1,6 @@
 package org.osnormais.storage.api.application.usecase.file.chunk.download;
 
+import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
@@ -28,6 +29,7 @@ public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
         this.chunkReader = chunkReader;
     }
 
+    @Transactional
     @Override
     public DownloadFileChunkOutput execute(final DownloadFileChunkInput input) {
 
@@ -40,6 +42,7 @@ public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
 
         final TransferChannel downloadChannel = file
                 .getDownloadChannel()
+                .filter(TransferChannel::isOpen)
                 .orElseThrow(() -> TransferChannelNotAvailableException.download(fileId));
 
         final Size fileSize = file.getSize();
@@ -48,10 +51,8 @@ public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
         final ParallelChunkLimit maxParallelChunks = downloadChannel.getChunkSpecification().maxParallel();
         final ThroughputLimit throughputLimit = downloadChannel.getThroughputLimit();
 
-        if (maxParallelChunks.value() <= concurrencyTracker.getCurrentCount(fileId))
+        if (!concurrencyTracker.tryIncrement(fileId, maxParallelChunks.value()))
             throw ConcurrentChunkLimitExceededException.create(maxParallelChunks);
-
-        concurrencyTracker.increment(fileId);
 
         try {
 

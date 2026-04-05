@@ -6,6 +6,9 @@ import org.osnormais.storage.api.domain.Identifier;
 
 public class FileId extends Identifier<UUID> {
 
+    protected FileId() {
+    }
+
     private FileId(UUID id) {
         super(id);
     }
@@ -16,7 +19,7 @@ public class FileId extends Identifier<UUID> {
 
     @Override
     public String getStringValue() {
-        return id.toString();
+        return value.toString();
     }
 
 }

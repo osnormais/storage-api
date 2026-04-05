@@ -2,6 +2,7 @@ package org.osnormais.storage.api.application.usecase.file.transferchannel.uploa
 
 import static java.util.Objects.requireNonNull;
 
+import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
@@ -25,6 +26,7 @@ public class DefaultCompleteFileUploadTransferChannelUseCase extends CompleteFil
         this.eventDispatcher = requireNonNull(eventDispatcher);
     }
 
+    @Transactional
     @Override
     public void execute(final CompleteFileUploadTransferChannelInput input) {
 
@@ -36,7 +38,7 @@ public class DefaultCompleteFileUploadTransferChannelUseCase extends CompleteFil
 
         file.completeUploadChannel();
 
-        eventDispatcher.notify(fileCommandGateway.update(file));
+        eventDispatcher.dispatch(eventDispatcher.append(fileCommandGateway.update(file)));
 
     }
 

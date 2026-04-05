@@ -164,7 +164,13 @@ public class FileSystemStorageService implements StorageService {
     }
 
     private Path toPath(final StorageKey storageKey) {
-        return rootLocation.resolve(storageKey.getFullKey());
+        final Path resolvedPath = rootLocation.resolve(storageKey.getFullKey()).normalize();
+        final Path normalizedRoot = rootLocation.normalize();
+
+        if (!resolvedPath.startsWith(normalizedRoot))
+            throw new SecurityException("Path traversal attempt detected: " + storageKey.getFullKey());
+
+        return resolvedPath;
     }
 
     private static Long calculateOffset(

@@ -15,10 +15,19 @@ application:
   server:
     port: ${SERVER_PORT:8080}
   messaging:
-    consumer:
-      file-upload-transfer-channel-completed:
-        concurrency: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_CONCURRENCY:1}
-        max-attempts: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_MAX_ATTEMPTS:5}
+    private:
+      consumer:
+        file-upload-transfer-channel-completed:
+          concurrency: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_CONCURRENCY:1}
+          max-attempts: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_MAX_ATTEMPTS:5}
+    public:
+      consumer:
+        drive-file-created:
+          concurrency: ${CONSUMER_DRIVE_FILE_CREATED_CONCURRENCY:1}
+          max-attempts: ${CONSUMER_DRIVE_FILE_CREATED_MAX_ATTEMPTS:5}
+  outbox:
+    relay:
+      fixed-rate: ${OUTBOX_RELAY_FIXED_RATE:60000}
   vendor:
     concurrency-tracker: ${VENDOR_CONCURRENCY_TRACKER:inmemory}
     database: ${VENDOR_DATABASE:h2}

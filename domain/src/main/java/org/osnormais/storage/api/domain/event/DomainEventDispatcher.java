@@ -6,9 +6,23 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.osnormais.storage.api.domain.Identifier;
 
-public class DomainEventDispatcher {
+public abstract class DomainEventDispatcher {
 
-    private final ConcurrentHashMap<String, List<DomainEventHandler<?>>> handlers = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<String, List<DomainEventHandler<?>>> handlers = new ConcurrentHashMap<>();
+
+    public abstract void dispatch(final DomainEventContext... context);
+
+    public abstract <I extends Identifier<?>> DomainEventContext append(
+            final DomainEventContext context,
+            final DomainEvent<I> event);
+
+    public abstract <I extends Identifier<?>> DomainEventContext append(
+            final DomainEventContext context,
+            final DomainEventSource source);
+
+    public DomainEventContext append(final DomainEventSource source) {
+        return append(DomainEventContext.create(), source);
+    }
 
     public void register(final String eventKey, final DomainEventHandler<?> handler) {
         this.handlers.computeIfAbsent(eventKey, k -> new CopyOnWriteArrayList<>()).add(handler);
@@ -25,24 +39,8 @@ public class DomainEventDispatcher {
         this.handlers.remove(eventKey);
     }
 
-    @SuppressWarnings("unchecked")
-    public <I extends Identifier<?>> void notify(final DomainEvent<I> event) {
-
-        this.handlers
-                .getOrDefault(event.key(), List.of())
-                .stream()
-                .filter(handler -> handler.eventKey().equals(event.key()))
-                .map(handler -> (DomainEventHandler<DomainEvent<I>>) handler)
-                .forEach(handler -> handler.handle(event));
-
-    }
-
-    public void notify(final DomainEventSource source) {
-        var event = source.nextEvent();
-        while (event.isPresent()) {
-            notify(event.get());
-            event = source.nextEvent();
-        }
+    protected List<DomainEventHandler<?>> handlerFor(final String eventKey) {
+        return this.handlers.getOrDefault(eventKey, List.of());
     }
 
 }

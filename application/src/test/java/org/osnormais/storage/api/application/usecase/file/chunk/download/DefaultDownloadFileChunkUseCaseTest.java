@@ -13,17 +13,16 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.application.port.ChunkReader;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
+import org.osnormais.storage.api.domain.Identifier;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
 import org.osnormais.storage.api.domain.file.TransferChannel;
@@ -35,20 +34,32 @@ import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 
-@ExtendWith(MockitoExtension.class)
 public class DefaultDownloadFileChunkUseCaseTest {
 
-    @InjectMocks
     DefaultDownloadFileChunkUseCase useCase;
 
-    @Mock
     FileQueryGateway fileQueryGateway;
-
-    @Mock
     ConcurrencyTracker concurrencyTracker;
-
-    @Mock
     ChunkReader chunkReader;
+
+    ConcurrencyTracker.Port port;
+    String[] tags = new String[] { "chunk-download" };
+
+    @BeforeEach
+    void setup() {
+
+        port = Mockito.mock(ConcurrencyTracker.Port.class);
+
+        fileQueryGateway = Mockito.mock(FileQueryGateway.class);
+        concurrencyTracker = new ConcurrencyTracker(port, tags);
+        chunkReader = Mockito.mock(ChunkReader.class);
+
+        useCase = new DefaultDownloadFileChunkUseCase(
+                fileQueryGateway,
+                concurrencyTracker,
+                chunkReader);
+
+    }
 
     @Test
     void givenAValidInput_whenCallsExecute_thenShouldReturnChunkInputStream() {
@@ -94,7 +105,7 @@ public class DefaultDownloadFileChunkUseCaseTest {
 
         final var expectedDownloadTransferChannelIdValue = UUID.randomUUID();
         final var expectedDownloadTransferChannelId = TransferChannelId.of(expectedDownloadTransferChannelIdValue);
-        final var expectedDownloadTransferChannelStatus = TransferChannelStatus.CLOSED;
+        final var expectedDownloadTransferChannelStatus = TransferChannelStatus.OPENED;
 
         final var expectedDownloadTransferChannel = TransferChannel.with(
                 expectedDownloadTransferChannelId,
@@ -114,12 +125,8 @@ public class DefaultDownloadFileChunkUseCaseTest {
         when(fileQueryGateway.findById(expectedFileId))
                 .thenReturn(Optional.of(expectedFile));
 
-        when(concurrencyTracker.getCurrentCount(expectedFileId))
-                .thenReturn(0);
-
-        doNothing()
-                .when(concurrencyTracker)
-                .increment(expectedFileId);
+        when(port.tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags))
+                .thenReturn(true);
 
         when(chunkReader
                 .readChunk(
@@ -130,8 +137,8 @@ public class DefaultDownloadFileChunkUseCaseTest {
                 .thenReturn(expectedInputStream);
 
         doNothing()
-                .when(concurrencyTracker)
-                .decrement(expectedFileId);
+                .when(port)
+                .decrement(expectedFileId, tags);
 
         final var input = new DownloadFileChunkInput(
                 expectedFileIdValue,
@@ -144,14 +151,14 @@ public class DefaultDownloadFileChunkUseCaseTest {
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
         verify(fileQueryGateway, times(1)).findById(any());
 
-        verify(concurrencyTracker, times(1)).getCurrentCount(expectedFileId);
-        verify(concurrencyTracker, times(1)).getCurrentCount(any());
+        verify(port, times(1))
+                .tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags);
 
-        verify(concurrencyTracker, times(1)).increment(expectedFileId);
-        verify(concurrencyTracker, times(1)).increment(any());
+        verify(port, times(0)).getCurrentCount(any(), any(), any());
+        verify(port, times(0)).increment(any(), any());
 
-        verify(concurrencyTracker, times(1)).decrement(expectedFileId);
-        verify(concurrencyTracker, times(1)).decrement(any());
+        verify(port, times(1)).decrement(expectedFileId, tags);
+        verify(port, times(1)).decrement(any(), any());
 
         verify(chunkReader, times(1)).readChunk(
                 expectedFileId,
@@ -208,7 +215,7 @@ public class DefaultDownloadFileChunkUseCaseTest {
 
         final var expectedDownloadTransferChannelIdValue = UUID.randomUUID();
         final var expectedDownloadTransferChannelId = TransferChannelId.of(expectedDownloadTransferChannelIdValue);
-        final var expectedDownloadTransferChannelStatus = TransferChannelStatus.CLOSED;
+        final var expectedDownloadTransferChannelStatus = TransferChannelStatus.OPENED;
 
         final var expectedDownloadTransferChannel = TransferChannel.with(
                 expectedDownloadTransferChannelId,
@@ -234,8 +241,8 @@ public class DefaultDownloadFileChunkUseCaseTest {
         when(fileQueryGateway.findById(expectedFileId))
                 .thenReturn(Optional.of(expectedFile));
 
-        when(concurrencyTracker.getCurrentCount(expectedFileId))
-                .thenReturn(4);
+        when(port.tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags))
+                .thenReturn(false);
 
         final var input = new DownloadFileChunkInput(
                 expectedFileIdValue,
@@ -252,10 +259,11 @@ public class DefaultDownloadFileChunkUseCaseTest {
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
         verify(fileQueryGateway, times(1)).findById(any());
 
-        verify(concurrencyTracker, times(1)).getCurrentCount(expectedFileId);
-        verify(concurrencyTracker, times(1)).getCurrentCount(any());
-        verify(concurrencyTracker, times(0)).increment(any());
-        verify(concurrencyTracker, times(0)).decrement(any());
+        verify(port, times(1))
+                .tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags);
+        verify(port, times(0)).getCurrentCount(any(), any());
+        verify(port, times(0)).increment(any(), any());
+        verify(port, times(0)).decrement(any(), any());
         verify(chunkReader, times(0)).readChunk(
                 any(),
                 any(),
@@ -340,9 +348,10 @@ public class DefaultDownloadFileChunkUseCaseTest {
 
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
         verify(fileQueryGateway, times(1)).findById(any());
-        verify(concurrencyTracker, times(0)).getCurrentCount(any());
-        verify(concurrencyTracker, times(0)).increment(any());
-        verify(concurrencyTracker, times(0)).decrement(any());
+        verify(port, times(0)).tryIncrement(any(Identifier.class), any(Integer.class), any(String[].class));
+        verify(port, times(0)).getCurrentCount(any());
+        verify(port, times(0)).increment(any());
+        verify(port, times(0)).decrement(any());
         verify(chunkReader, times(0)).readChunk(
                 any(),
                 any(),
@@ -377,9 +386,10 @@ public class DefaultDownloadFileChunkUseCaseTest {
 
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
         verify(fileQueryGateway, times(1)).findById(any());
-        verify(concurrencyTracker, times(0)).getCurrentCount(any());
-        verify(concurrencyTracker, times(0)).increment(any());
-        verify(concurrencyTracker, times(0)).decrement(any());
+        verify(port, times(0)).tryIncrement(any(Identifier.class), any(Integer.class), any(String[].class));
+        verify(port, times(0)).getCurrentCount(any());
+        verify(port, times(0)).increment(any());
+        verify(port, times(0)).decrement(any());
         verify(chunkReader, times(0)).readChunk(
                 any(),
                 any(),

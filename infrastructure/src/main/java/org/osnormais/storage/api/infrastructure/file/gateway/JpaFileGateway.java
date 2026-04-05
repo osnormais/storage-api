@@ -6,9 +6,11 @@ import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
+import org.osnormais.storage.api.infrastructure.exception.ResourceAlreadyExistsException;
 import org.osnormais.storage.api.infrastructure.file.persistence.FileJpaEntity;
 import org.osnormais.storage.api.infrastructure.file.persistence.FileJpaRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
@@ -20,6 +22,7 @@ public class JpaFileGateway implements FileCommandGateway, FileQueryGateway {
         this.fileRepository = fileRepository;
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     @Override
     public Optional<File> findById(final FileId id) {
         return fileRepository
@@ -27,19 +30,20 @@ public class JpaFileGateway implements FileCommandGateway, FileQueryGateway {
                 .map(FileJpaEntity::toDomain);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     @Override
     public File create(final File file) {
 
         if (fileRepository.existsById(file.getId().getValue()))
-            throw new IllegalStateException("File with id %s already exists".formatted(file.getId().getStringValue()));
+            throw ResourceAlreadyExistsException
+                    .with("File with id %s already exists".formatted(file.getId().getStringValue()));
 
         save(file);
 
         return file;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     @Override
     public File update(final File file) {
 

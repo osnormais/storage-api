@@ -2,6 +2,7 @@ package org.osnormais.storage.api.application.usecase.file.finalize;
 
 import static java.util.Objects.requireNonNull;
 
+import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.gateway.file.FileCommandGateway;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
@@ -28,6 +29,7 @@ public class DefaultFinalizeFileUseCase extends FinalizeFileUseCase {
         this.eventDispatcher = requireNonNull(eventDispatcher);
     }
 
+    @Transactional
     @Override
     public void execute(final FinalizeFileInput input) {
 
@@ -38,7 +40,8 @@ public class DefaultFinalizeFileUseCase extends FinalizeFileUseCase {
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
         file.publicate(() -> fileFinalizer.finalize(file));
-        eventDispatcher.notify(fileCommandGateway.update(file));
+
+        eventDispatcher.dispatch(eventDispatcher.append(fileCommandGateway.update(file)));
 
     }
 

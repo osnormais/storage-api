@@ -3,7 +3,7 @@ package org.osnormais.storage.api.infrastructure.exception;
 public class UnexpectedException extends InfrastructureException {
 
     public UnexpectedException(final String message, final Throwable cause) {
-        super(message, cause);
+        super(message, cause, false);
     }
 
     public static UnexpectedException with(final String message) {
