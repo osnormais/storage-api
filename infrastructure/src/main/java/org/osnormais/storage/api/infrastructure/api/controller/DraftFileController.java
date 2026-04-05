@@ -135,8 +135,8 @@ public class DraftFileController {
 
     @PostMapping("{fileId}/chunks/{chunkIndex}")
     public ResponseEntity<Void> uploadFileChunk(
-            @PathVariable UUID fileId,
-            @PathVariable Long chunkIndex,
+            @PathVariable("fileId") UUID fileId,
+            @PathVariable("chunkIndex") Long chunkIndex,
             @RequestHeader("X-Checksum-Value") String checksumValue,
             @RequestHeader("X-Checksum-Algorithm") Checksum.Algorithm checksumAlgorithm,
             HttpServletRequest request) throws IOException {
