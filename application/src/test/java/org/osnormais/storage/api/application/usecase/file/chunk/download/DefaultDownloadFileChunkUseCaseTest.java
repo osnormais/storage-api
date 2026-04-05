@@ -15,9 +15,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
 import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
@@ -36,7 +34,6 @@ import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 
-@ExtendWith(MockitoExtension.class)
 public class DefaultDownloadFileChunkUseCaseTest {
 
     DefaultDownloadFileChunkUseCase useCase;
