@@ -25,6 +25,9 @@ application:
         drive-file-created:
           concurrency: ${CONSUMER_DRIVE_FILE_CREATED_CONCURRENCY:1}
           max-attempts: ${CONSUMER_DRIVE_FILE_CREATED_MAX_ATTEMPTS:5}
+  outbox:
+    relay:
+      fixed-rate: ${OUTBOX_RELAY_FIXED_RATE:60000}
   vendor:
     concurrency-tracker: ${VENDOR_CONCURRENCY_TRACKER:inmemory}
     database: ${VENDOR_DATABASE:h2}
