@@ -10,8 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -29,26 +27,10 @@ public class RedisConfig {
     }
 
     @Bean
-    RedisScript<Integer> decrementPositiveScript() {
-
-        final String script = """
-                local current = redis.call('get', KEYS[1])
-                if not current or tonumber(current) <= 0 then
-                    return 0
-                else
-                    return redis.call('decr', KEYS[1])
-                end
-                """;
-
-        return new DefaultRedisScript<>(script, Integer.class);
-    }
-
-    @Bean
     ConcurrencyTracker.Port redisConcurrencyTracker(
             final RedisTemplate<String, Integer> redisTemplate,
-            final RedisScript<Integer> decrementPositiveScript,
             final @Value("${redis.concurrency.tracker.ttl-seconds}") Long ttlSeconds) {
-        return new RedisConcurrencyTrackerPort(redisTemplate, decrementPositiveScript, Duration.ofSeconds(ttlSeconds));
+        return new RedisConcurrencyTrackerPort(redisTemplate, Duration.ofSeconds(ttlSeconds));
     }
 
 }
