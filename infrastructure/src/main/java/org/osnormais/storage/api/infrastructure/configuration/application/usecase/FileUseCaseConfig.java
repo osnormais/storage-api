@@ -75,7 +75,7 @@ public class FileUseCaseConfig {
     UploadFileChunkUseCase uploadFileChunkUseCase() {
         return new DefaultUploadFileChunkUseCase(
                 fileQueryGateway,
-                new ConcurrencyTracker(concurrencyTrackerPort, "chunk-upload"),
+                new ConcurrencyTracker(concurrencyTrackerPort, new String[] { "chunk-upload" }),
                 chunkWriter);
     }
 
@@ -107,7 +107,7 @@ public class FileUseCaseConfig {
     DownloadFileChunkUseCase downloadFileChunkUseCase() {
         return new DefaultDownloadFileChunkUseCase(
                 fileQueryGateway,
-                new ConcurrencyTracker(concurrencyTrackerPort, "chunk-download"),
+                new ConcurrencyTracker(concurrencyTrackerPort, new String[] { "chunk-download" }),
                 chunkReader);
     }
 

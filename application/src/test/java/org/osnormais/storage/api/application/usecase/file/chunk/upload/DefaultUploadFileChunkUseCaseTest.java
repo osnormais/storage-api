@@ -13,10 +13,10 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.osnormais.storage.api.application.exception.ChunkIntegrityViolationException;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
@@ -25,6 +25,7 @@ import org.osnormais.storage.api.application.exception.TransferChannelNotAvailab
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.application.port.ChunkWriter;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
+import org.osnormais.storage.api.domain.Identifier;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
 import org.osnormais.storage.api.domain.file.TransferChannel;
@@ -37,17 +38,29 @@ import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 @ExtendWith(MockitoExtension.class)
 public class DefaultUploadFileChunkUseCaseTest {
 
-    @InjectMocks
     DefaultUploadFileChunkUseCase useCase;
-
-    @Mock
     FileQueryGateway fileQueryGateway;
-
-    @Mock
     ConcurrencyTracker concurrencyTracker;
-
-    @Mock
     ChunkWriter chunkWriter;
+
+    ConcurrencyTracker.Port port;
+    String[] tags = new String[] { "chunk-upload" };
+
+    @BeforeEach
+    void setup() {
+
+        port = Mockito.mock(ConcurrencyTracker.Port.class);
+
+        fileQueryGateway = Mockito.mock(FileQueryGateway.class);
+        concurrencyTracker = new ConcurrencyTracker(port, tags);
+        chunkWriter = Mockito.mock(ChunkWriter.class);
+
+        useCase = new DefaultUploadFileChunkUseCase(
+                fileQueryGateway,
+                concurrencyTracker,
+                chunkWriter);
+
+    }
 
     @Test
     void givenAnValidInput_whenCallsExecute_thenShouldUploadChunk() {
@@ -92,8 +105,6 @@ public class DefaultUploadFileChunkUseCaseTest {
                 null,
                 null);
 
-        final var expectedConcurrencyTrackerCount = 0;
-
         final var chunkSize = expectedUploadTransferChannel
                 .getChunkSpecification()
                 .effectiveChunkSize(
@@ -103,12 +114,8 @@ public class DefaultUploadFileChunkUseCaseTest {
         when(fileQueryGateway.findById(expectedFileId))
                 .thenReturn(Optional.of(expectedFile));
 
-        when(concurrencyTracker.getCurrentCount(expectedFileId))
-                .thenReturn(expectedConcurrencyTrackerCount);
-
-        doNothing()
-                .when(concurrencyTracker)
-                .increment(expectedFileId);
+        when(port.tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags))
+                .thenReturn(true);
 
         when(chunkWriter
                 .writeChunk(
@@ -121,8 +128,8 @@ public class DefaultUploadFileChunkUseCaseTest {
                 .thenReturn(expectedFileChecksum);
 
         doNothing()
-                .when(concurrencyTracker)
-                .decrement(expectedFileId);
+                .when(port)
+                .decrement(expectedFileId, tags);
 
         final var input = new UploadFileChunkInput(
                 expectedFileIdValue,
@@ -135,10 +142,10 @@ public class DefaultUploadFileChunkUseCaseTest {
 
         verify(fileQueryGateway, times(1)).findById(any());
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
-        verify(concurrencyTracker, times(1)).getCurrentCount(any());
-        verify(concurrencyTracker, times(1)).getCurrentCount(expectedFileId);
-        verify(concurrencyTracker, times(1)).increment(any());
-        verify(concurrencyTracker, times(1)).increment(expectedFileId);
+        verify(port, times(1)).tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags);
+        verify(port, times(1)).tryIncrement(any(Identifier.class), any(Integer.class), any(String[].class));
+        verify(port, times(0)).getCurrentCount(any(), any());
+        verify(port, times(0)).increment(any());
         verify(chunkWriter, times(1)).writeChunk(any(), any(), any(), any(), any(), any());
         verify(chunkWriter, times(1)).writeChunk(
                 expectedFileId,
@@ -147,8 +154,8 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedThroughputLimit,
                 expectedChecksumAlgorithm,
                 expectedInputStream);
-        verify(concurrencyTracker, times(1)).decrement(any());
-        verify(concurrencyTracker, times(1)).decrement(expectedFileId);
+        verify(port, times(1)).decrement(any(), any());
+        verify(port, times(1)).decrement(expectedFileId, tags);
 
     }
 
@@ -195,8 +202,6 @@ public class DefaultUploadFileChunkUseCaseTest {
                 null,
                 null);
 
-        final var expectedConcurrencyTrackerCount = 2;
-
         final var expectedExceptionMessage = "Maximum parallel chunk reached for the file.";
         final var expectedExceptionErrrosCount = 1;
         final var expectedExceptionErrrorMessage0 = "Maximum parallel chunk of "
@@ -206,8 +211,8 @@ public class DefaultUploadFileChunkUseCaseTest {
         when(fileQueryGateway.findById(expectedFileId))
                 .thenReturn(Optional.of(expectedFile));
 
-        when(concurrencyTracker.getCurrentCount(expectedFileId))
-                .thenReturn(expectedConcurrencyTrackerCount);
+        when(port.tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags))
+                .thenReturn(false);
 
         final var input = new UploadFileChunkInput(
                 expectedFileIdValue,
@@ -226,11 +231,12 @@ public class DefaultUploadFileChunkUseCaseTest {
 
         verify(fileQueryGateway, times(1)).findById(any());
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
-        verify(concurrencyTracker, times(1)).getCurrentCount(any());
-        verify(concurrencyTracker, times(1)).getCurrentCount(expectedFileId);
-        verify(concurrencyTracker, times(0)).increment(any());
+        verify(port, times(1)).tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags);
+        verify(port, times(1)).tryIncrement(any(Identifier.class), any(Integer.class), any(String[].class));
+        verify(port, times(0)).getCurrentCount(any(), any());
+        verify(port, times(0)).increment(any(), any());
         verify(chunkWriter, times(0)).writeChunk(any(), any(), any(), any(), any(), any());
-        verify(concurrencyTracker, times(0)).decrement(any());
+        verify(port, times(0)).decrement(any(), any());
 
     }
 
@@ -291,10 +297,11 @@ public class DefaultUploadFileChunkUseCaseTest {
 
         verify(fileQueryGateway, times(1)).findById(any());
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
-        verify(concurrencyTracker, times(0)).getCurrentCount(any());
-        verify(concurrencyTracker, times(0)).increment(any());
+        verify(port, times(0)).tryIncrement(any(Identifier.class), any(Integer.class), any(String[].class));
+        verify(port, times(0)).getCurrentCount(any(), any());
+        verify(port, times(0)).increment(any(), any());
         verify(chunkWriter, times(0)).writeChunk(any(), any(), any(), any(), any(), any());
-        verify(concurrencyTracker, times(0)).decrement(any());
+        verify(port, times(0)).decrement(any(), any());
 
     }
 
@@ -335,10 +342,11 @@ public class DefaultUploadFileChunkUseCaseTest {
 
         verify(fileQueryGateway, times(1)).findById(any());
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
-        verify(concurrencyTracker, times(0)).getCurrentCount(any());
-        verify(concurrencyTracker, times(0)).increment(any());
+        verify(port, times(0)).tryIncrement(any(Identifier.class), any(Integer.class), any(String[].class));
+        verify(port, times(0)).getCurrentCount(any(), any());
+        verify(port, times(0)).increment(any(), any());
         verify(chunkWriter, times(0)).writeChunk(any(), any(), any(), any(), any(), any());
-        verify(concurrencyTracker, times(0)).decrement(any());
+        verify(port, times(0)).decrement(any(), any());
 
     }
 
@@ -390,8 +398,6 @@ public class DefaultUploadFileChunkUseCaseTest {
                 null,
                 null);
 
-        final var expectedConcurrencyTrackerCount = 0;
-
         final var chunkSize = expectedUploadTransferChannel
                 .getChunkSpecification()
                 .effectiveChunkSize(
@@ -408,12 +414,8 @@ public class DefaultUploadFileChunkUseCaseTest {
         when(fileQueryGateway.findById(expectedFileId))
                 .thenReturn(Optional.of(expectedFile));
 
-        when(concurrencyTracker.getCurrentCount(expectedFileId))
-                .thenReturn(expectedConcurrencyTrackerCount);
-
-        doNothing()
-                .when(concurrencyTracker)
-                .increment(expectedFileId);
+        when(port.tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags))
+                .thenReturn(true);
 
         when(chunkWriter
                 .writeChunk(
@@ -426,8 +428,8 @@ public class DefaultUploadFileChunkUseCaseTest {
                 .thenReturn(expectedChunkChecksum);
 
         doNothing()
-                .when(concurrencyTracker)
-                .decrement(expectedFileId);
+                .when(port)
+                .decrement(expectedFileId, tags);
 
         final var input = new UploadFileChunkInput(
                 expectedFileIdValue,
@@ -444,10 +446,12 @@ public class DefaultUploadFileChunkUseCaseTest {
 
         verify(fileQueryGateway, times(1)).findById(any());
         verify(fileQueryGateway, times(1)).findById(expectedFileId);
-        verify(concurrencyTracker, times(1)).getCurrentCount(any());
-        verify(concurrencyTracker, times(1)).getCurrentCount(expectedFileId);
-        verify(concurrencyTracker, times(1)).increment(any());
-        verify(concurrencyTracker, times(1)).increment(expectedFileId);
+
+        verify(port, times(1)).tryIncrement(any(Identifier.class), any(Integer.class), any(String[].class));
+        verify(port, times(1)).tryIncrement(expectedFileId, expectedParallelChunkLimitValue, tags);
+
+        verify(port, times(0)).getCurrentCount(any(), any());
+        verify(port, times(0)).increment(any(), any());
         verify(chunkWriter, times(1)).writeChunk(any(), any(), any(), any(), any(), any());
         verify(chunkWriter, times(1)).writeChunk(
                 expectedFileId,
@@ -456,8 +460,8 @@ public class DefaultUploadFileChunkUseCaseTest {
                 expectedThroughputLimit,
                 expectedChecksumAlgorithm,
                 expectedInputStream);
-        verify(concurrencyTracker, times(1)).decrement(any());
-        verify(concurrencyTracker, times(1)).decrement(expectedFileId);
+        verify(port, times(1)).decrement(any(), any());
+        verify(port, times(1)).decrement(expectedFileId, tags);
 
     }
 

@@ -7,11 +7,11 @@ import org.osnormais.storage.api.domain.Identifier;
 
 public class ConcurrencyTracker {
 
-    private final Port port;
+    private final ConcurrencyTracker.Port port;
     private final String[] tags;
 
     public ConcurrencyTracker(
-            final Port port,
+            final ConcurrencyTracker.Port port,
             final String... tags) {
         this.port = requireNonNull(port);
         this.tags = isNull(tags) ? new String[0] : tags.clone();

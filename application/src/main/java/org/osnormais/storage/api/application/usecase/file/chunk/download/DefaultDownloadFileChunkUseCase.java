@@ -51,10 +51,8 @@ public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
         final ParallelChunkLimit maxParallelChunks = downloadChannel.getChunkSpecification().maxParallel();
         final ThroughputLimit throughputLimit = downloadChannel.getThroughputLimit();
 
-        if (maxParallelChunks.value() <= concurrencyTracker.getCurrentCount(fileId))
+        if (!concurrencyTracker.tryIncrement(fileId, maxParallelChunks.value()))
             throw ConcurrentChunkLimitExceededException.create(maxParallelChunks);
-
-        concurrencyTracker.increment(fileId);
 
         try {
 

@@ -56,10 +56,8 @@ public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
         final ParallelChunkLimit maxParallelChunks = uploadChannel.getChunkSpecification().maxParallel();
         final ThroughputLimit throughputLimit = uploadChannel.getThroughputLimit();
 
-        if (maxParallelChunks.value() <= concurrencyTracker.getCurrentCount(fileId))
+        if (!concurrencyTracker.tryIncrement(fileId, maxParallelChunks.value()))
             throw ConcurrentChunkLimitExceededException.create(maxParallelChunks);
-
-        concurrencyTracker.increment(fileId);
 
         try {
 

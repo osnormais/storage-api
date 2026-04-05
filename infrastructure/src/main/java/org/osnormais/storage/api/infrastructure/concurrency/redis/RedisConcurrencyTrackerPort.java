@@ -13,7 +13,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 
-public class RedisConcurrencyTrackerPort implements ConcurrencyTracker.Port {
+public class RedisConcurrencyTrackerPort implements ConcurrencyTracker.Port  {
 
     private final RedisTemplate<String, Integer> redisTemplate;
     private final RedisScript<Boolean> tryIncrementScript;

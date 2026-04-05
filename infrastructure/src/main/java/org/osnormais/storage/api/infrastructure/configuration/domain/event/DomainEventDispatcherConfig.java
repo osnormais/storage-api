@@ -27,7 +27,7 @@ public class DomainEventDispatcherConfig {
     DomainEventDispatcher eventDispatcher(final List<DomainEventHandler<?>> eventHandlers) {
         final var dispatcher = new OutboxEventDispatcher(
                 outboxGateway,
-                new ConcurrencyTracker(concurrencyTrackerPort, "event-dispatcher"));
+                new ConcurrencyTracker(concurrencyTrackerPort, new String[] { "event-dispatcher" }));
         eventHandlers.forEach(handler -> dispatcher.register(handler.eventKey(), handler));
         return dispatcher;
     }
