@@ -40,9 +40,6 @@ public class OutboxJpa {
     @Column(nullable = false)
     private Instant registeredAt;
 
-    @Column(nullable = false)
-    private Boolean processed;
-
     public OutboxJpa(
             final UUID contextId,
             final Long contextPosition,
@@ -54,7 +51,6 @@ public class OutboxJpa {
         this.eventKey = eventKey;
         this.payloadClass = payloadClass;
         this.payload = payload;
-        this.processed = Boolean.FALSE;
     }
 
     public OutboxJpa() {
@@ -114,14 +110,6 @@ public class OutboxJpa {
 
     public void setRegisteredAt(Instant registeredAt) {
         this.registeredAt = registeredAt;
-    }
-
-    public Boolean getProcessed() {
-        return processed;
-    }
-
-    public void setProcessed(Boolean processed) {
-        this.processed = processed;
     }
 
     @Override

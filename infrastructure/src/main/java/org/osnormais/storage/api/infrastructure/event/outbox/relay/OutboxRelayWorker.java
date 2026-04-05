@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import org.osnormais.storage.api.domain.event.DomainEventContext;
 import org.osnormais.storage.api.infrastructure.event.outbox.dispatcher.OutboxEventDispatcher;
 import org.osnormais.storage.api.infrastructure.event.outbox.gateway.OutboxJpaGateway;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,13 +26,21 @@ public class OutboxRelayWorker {
     }
 
     @Transactional
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 900099999)
     public void retryPendingOutboxEvents() {
 
         outboxGateway
                 .findAllContextPending(Instant.now().minus(5l, ChronoUnit.MINUTES))
-                .forEach(dispatcher::dispatch);
+                .forEach(this::dispatch);
 
+    }
+
+    private void dispatch(final DomainEventContext context) {
+        try {
+            dispatcher.dispatch(context);
+        } catch (final Exception e) {
+            return;
+        }
     }
 
 }

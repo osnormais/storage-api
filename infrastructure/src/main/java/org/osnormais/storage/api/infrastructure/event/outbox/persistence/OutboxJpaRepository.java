@@ -17,8 +17,7 @@ public interface OutboxJpaRepository extends JpaRepository<OutboxJpa, UUID> {
             select
                 new org.osnormais.storage.api.domain.event.DomainEventContext(o.contextId, min(o.contextPosition))
             from Outbox o
-            where o.processed = false
-              and o.registeredAt <= :cutoff
+            where o.registeredAt <= :cutoff
             group by o.contextId
             order by min(o.registeredAt) asc
                      """)
