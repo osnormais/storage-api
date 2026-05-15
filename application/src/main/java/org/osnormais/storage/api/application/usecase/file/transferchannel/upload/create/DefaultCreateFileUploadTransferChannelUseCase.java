@@ -10,7 +10,6 @@ import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
 import org.osnormais.storage.api.domain.file.TransferChannel;
-import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
 import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
@@ -22,36 +21,33 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
     private final FileQueryGateway fileQueryGateway;
     private final FileCommandGateway fileCommandGateway;
 
+    private final Size chunkSizeBytes;
+    private final ParallelChunkLimit maxParallelChunks;
+    private final ThroughputLimit maxBytesPerSecondPerChunk;
+
     public DefaultCreateFileUploadTransferChannelUseCase(
             final FileQueryGateway fileQueryGateway,
-            final FileCommandGateway fileCommandGateway) {
+            final FileCommandGateway fileCommandGateway,
+            final Long chunkSizeBytes,
+            final Integer maxParallelChunks,
+            final Long maxBytesPerSecondPerChunk) {
         this.fileQueryGateway = requireNonNull(fileQueryGateway);
         this.fileCommandGateway = requireNonNull(fileCommandGateway);
+        this.chunkSizeBytes = Size.of(requireNonNull(chunkSizeBytes));
+        this.maxParallelChunks = ParallelChunkLimit.of(requireNonNull(maxParallelChunks));
+        this.maxBytesPerSecondPerChunk = ThroughputLimit.create(requireNonNull(maxBytesPerSecondPerChunk));
     }
 
     @Transactional
     @Override
     public CreateFileUploadTransferChannelOutput execute(final CreateFileUploadTransferChannelInput input) {
 
-        final ValidationHandler handler = Notification.create();
-
         final FileId fileId = FileId.of(input.fileId());
+        final ThroughputLimit targetRateLimit = ThroughputLimit.create(input.targetBytesPerSecond());
 
-        final ThroughputLimit throughputLimit = ThroughputLimit.create(input.throughputBytesLimit());
-
-        final Size chunkSpecificationSize = Size.of(input.chunkBytesSize());
-        final ParallelChunkLimit chunkSpecificationParallelChunkLimit = ParallelChunkLimit
-                .of(input.maxParallelChunks());
-
-        final ChunkSpecification chunkSpecification = ChunkSpecification
-                .create(
-                        chunkSpecificationSize,
-                        chunkSpecificationParallelChunkLimit);
-
+        final ValidationHandler handler = Notification.create();
         fileId.validate(handler);
-        throughputLimit.validate(handler);
-        chunkSpecification.validate(handler);
-
+        targetRateLimit.validate(handler);
         if (handler.hasErrors())
             throw ValidationException.with("Invalid input values", handler);
 
@@ -59,7 +55,11 @@ public class DefaultCreateFileUploadTransferChannelUseCase extends CreateFileUpl
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        final TransferChannel transferChannel = file.openUploadChannel(throughputLimit, chunkSpecification);
+        final TransferChannel transferChannel = file.openUploadChannel(
+                targetRateLimit,
+                maxBytesPerSecondPerChunk,
+                maxParallelChunks,
+                chunkSizeBytes);
 
         fileCommandGateway.update(file);
 

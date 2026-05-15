@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 import org.osnormais.storage.api.domain.AggregateRoot;
 import org.osnormais.storage.api.domain.event.DomainEvent;
 import org.osnormais.storage.api.domain.event.DomainEventSource;
-import org.osnormais.storage.api.domain.exception.DomainException;
 import org.osnormais.storage.api.domain.exception.FileAlreadyPublishedException;
 import org.osnormais.storage.api.domain.exception.FileNotYetPublished;
 import org.osnormais.storage.api.domain.exception.FileUploadInProgressException;
@@ -23,6 +22,7 @@ import org.osnormais.storage.api.domain.file.event.FilePublishedEvent;
 import org.osnormais.storage.api.domain.file.event.FileUploadTransferChannelCompletedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
+import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Publication;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
@@ -122,15 +122,16 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 new LinkedList<>());
     }
 
+    @Deprecated(forRemoval = true)
     public TransferChannel openDownloadChannel(
             final ThroughputLimit throughputLimit,
             final ChunkSpecification chunkSpecification) {
 
         if (isNull(throughputLimit))
-            throw InvalidArgumentException.with(DomainException.Error.with("'throughputLimit' should not be null"));
+            throw InvalidArgumentException.with("'throughputLimit' should not be null");
 
         if (isNull(chunkSpecification))
-            throw InvalidArgumentException.with(DomainException.Error.with("'chunkSpecification' should not be null"));
+            throw InvalidArgumentException.with("'chunkSpecification' should not be null");
 
         if (!isPublished())
             throw FileNotYetPublished.create(this);
@@ -142,18 +143,25 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         this.downloadChannel = Optional.of(transferChannel);
 
         return transferChannel;
-
     }
 
     public TransferChannel openUploadChannel(
-            final ThroughputLimit throughputLimit,
-            final ChunkSpecification chunkSpecification) {
+            final ThroughputLimit targetRateLimit,
+            final ThroughputLimit maxRateLimitPerChunk,
+            final ParallelChunkLimit maxParallelChunks,
+            final Size chunkSize) {
 
-        if (isNull(throughputLimit))
-            throw InvalidArgumentException.with(DomainException.Error.with("'throughputLimit' should not be null"));
+        if (isNull(targetRateLimit))
+            throw InvalidArgumentException.with("'targetRateLimit' should not be null");
 
-        if (isNull(chunkSpecification))
-            throw InvalidArgumentException.with(DomainException.Error.with("'chunkSpecification' should not be null"));
+        if (isNull(maxRateLimitPerChunk))
+            throw InvalidArgumentException.with("'maxRateLimitPerChunk' should not be null");
+
+        if (isNull(maxParallelChunks))
+            throw InvalidArgumentException.with("'maxParallelChunks' should not be null");
+
+        if (isNull(chunkSize))
+            throw InvalidArgumentException.with("'chunkSize' should not be null");
 
         if (isPublished())
             throw FileAlreadyPublishedException.create(this);
@@ -161,7 +169,11 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         if (hasOpenUploadChannel())
             throw TransferChannelAlreadyOpennedException.create();
 
-        final TransferChannel transferChannel = TransferChannel.create(throughputLimit, chunkSpecification);
+        final TransferChannel transferChannel = TransferChannel.create(
+                targetRateLimit,
+                maxRateLimitPerChunk,
+                maxParallelChunks,
+                chunkSize);
         this.uploadChannel = Optional.of(transferChannel);
         return transferChannel;
 
@@ -185,7 +197,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
     public File publicate(final Supplier<Checksum> checksumSupplier) {
 
         if (isNull(checksumSupplier))
-            throw InvalidArgumentException.with(DomainException.Error.with("'checksumSupplier' should not be null"));
+            throw InvalidArgumentException.with("'checksumSupplier' should not be null");
 
         if (isPublished())
             throw FileAlreadyPublishedException.create(this);
@@ -196,7 +208,7 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         final Checksum checksum = checksumSupplier.get();
 
         if (isNull(checksum))
-            throw InvalidArgumentException.with(DomainException.Error.with("'checksum' should not be null"));
+            throw InvalidArgumentException.with("'checksum' should not be null");
 
         if (this.checksum.equals(checksum)) {
 

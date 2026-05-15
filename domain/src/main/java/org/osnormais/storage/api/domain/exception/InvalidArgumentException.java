@@ -12,6 +12,10 @@ public class InvalidArgumentException extends SilentDomainException {
         super(MESSAGE, isNull(errors) ? List.of() : List.copyOf(errors));
     }
 
+    public static InvalidArgumentException with(final String error) {
+        return new InvalidArgumentException(List.of(DomainException.Error.with(error)));
+    }
+
     public static InvalidArgumentException with(final DomainException.Error error) {
         final List<DomainException.Error> list = isNull(error) ? List.of() : List.of(error);
         return new InvalidArgumentException(list);

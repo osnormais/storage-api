@@ -25,6 +25,7 @@ import org.osnormais.storage.api.application.usecase.file.transferchannel.upload
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.DefaultRetrieveFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.RetrieveFileUploadTransferChannelUseCase;
 import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
+import org.osnormais.storage.api.infrastructure.configuration.properties.ApplicationProps;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,6 +40,8 @@ public class FileUseCaseConfig {
     private final FileFinalizer fileFinalizer;
     private final DomainEventDispatcher domainEventDispatcher;
 
+    private final ApplicationProps applicationProps;
+
     public FileUseCaseConfig(
             final FileCommandGateway fileCommandGateway,
             final FileQueryGateway fileQueryGateway,
@@ -46,7 +49,8 @@ public class FileUseCaseConfig {
             final ChunkWriter chunkWriter,
             final ChunkReader chunkReader,
             final FileFinalizer fileFinalizer,
-            final DomainEventDispatcher domainEventDispatcher) {
+            final DomainEventDispatcher domainEventDispatcher,
+            final ApplicationProps applicationProps) {
         this.fileCommandGateway = requireNonNull(fileCommandGateway);
         this.fileQueryGateway = requireNonNull(fileQueryGateway);
         this.concurrencyTrackerPort = requireNonNull(concurrencyTrackerPort);
@@ -54,6 +58,7 @@ public class FileUseCaseConfig {
         this.chunkReader = requireNonNull(chunkReader);
         this.fileFinalizer = requireNonNull(fileFinalizer);
         this.domainEventDispatcher = requireNonNull(domainEventDispatcher);
+        this.applicationProps = requireNonNull(applicationProps);
     }
 
     @Bean
@@ -63,7 +68,12 @@ public class FileUseCaseConfig {
 
     @Bean
     CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase() {
-        return new DefaultCreateFileUploadTransferChannelUseCase(fileQueryGateway, fileCommandGateway);
+        return new DefaultCreateFileUploadTransferChannelUseCase(
+                fileQueryGateway,
+                fileCommandGateway,
+                applicationProps.transferChannel().upload().chunkSizeBytes(),
+                applicationProps.transferChannel().upload().chunkMaxParallel(),
+                applicationProps.transferChannel().upload().chunkMaxBytesPerSecond());
     }
 
     @Bean

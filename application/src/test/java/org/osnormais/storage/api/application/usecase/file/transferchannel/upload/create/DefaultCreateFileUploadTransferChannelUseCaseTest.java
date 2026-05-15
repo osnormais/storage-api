@@ -11,9 +11,9 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.osnormais.storage.api.application.exception.NotFoundException;
@@ -33,7 +33,6 @@ import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 @ExtendWith(MockitoExtension.class)
 public class DefaultCreateFileUploadTransferChannelUseCaseTest {
 
-    @InjectMocks
     DefaultCreateFileUploadTransferChannelUseCase useCase;
 
     @Mock
@@ -42,13 +41,27 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
     @Mock
     FileCommandGateway fileCommandGateway;
 
+    Long chunkSizeBytes = 1024L;
+    Integer maxParallelChunks = 2;
+    Long maxBytesPerSecondPerChunk = 1024L;
+
+    @BeforeEach
+    void setup() {
+        useCase = new DefaultCreateFileUploadTransferChannelUseCase(
+                fileQueryGateway,
+                fileCommandGateway,
+                chunkSizeBytes,
+                maxParallelChunks,
+                maxBytesPerSecondPerChunk);
+    }
+
     @Test
     void givenAnValidInput_whenCallsExecute_thenShouldCreateUploadTransferChannel() {
 
         final var expectedFileIdValue = UUID.randomUUID();
         final var expectedThroughputBytesLimitValue = 1024L;
         final var expectedChunkBytesSizeValue = 1024L;
-        final var expectedMaxParallelChunksValue = 2;
+        final var expectedMaxParallelChunksValue = 1;
 
         final var expectedTotalChunksValue = 3L;
         final var expectedLastChunkBytesSizeValue = 2L;
@@ -93,11 +106,9 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 })))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        final var input = new CreateFileUploadTransferChannelInput(
+        final CreateFileUploadTransferChannelInput input = new CreateFileUploadTransferChannelInput(
                 expectedFileIdValue,
-                expectedThroughputBytesLimitValue,
-                expectedChunkBytesSizeValue,
-                expectedMaxParallelChunksValue);
+                expectedThroughputBytesLimitValue);
 
         final var actualOutput = assertDoesNotThrow(() -> useCase.execute(input));
 
@@ -113,8 +124,6 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
 
         final UUID expectedFileIdValue = UUID.randomUUID();
         final Long expectedThroughputBytesLimit = 1024L;
-        final Long expectedChunkBytesSize = 1024L;
-        final Integer expectedMaxParallelChunks = 2;
 
         final var expectedFileId = FileId.of(expectedFileIdValue);
 
@@ -124,11 +133,9 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
                 File.class.getSimpleName(),
                 expectedFileId.getStringValue());
 
-        final var input = new CreateFileUploadTransferChannelInput(
+        final CreateFileUploadTransferChannelInput input = new CreateFileUploadTransferChannelInput(
                 expectedFileIdValue,
-                expectedThroughputBytesLimit,
-                expectedChunkBytesSize,
-                expectedMaxParallelChunks);
+                expectedThroughputBytesLimit);
 
         when(fileQueryGateway.findById(eq(expectedFileId)))
                 .thenReturn(Optional.empty());
@@ -150,14 +157,10 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
 
         final UUID expectedFileIdValue = null;
         final Long expectedThroughputBytesLimit = 1024L;
-        final Long expectedChunkBytesSize = 1024L;
-        final Integer expectedMaxParallelChunks = 2;
 
-        final var input = new CreateFileUploadTransferChannelInput(
+        final CreateFileUploadTransferChannelInput input = new CreateFileUploadTransferChannelInput(
                 expectedFileIdValue,
-                expectedThroughputBytesLimit,
-                expectedChunkBytesSize,
-                expectedMaxParallelChunks);
+                expectedThroughputBytesLimit);
 
         final var actualException = assertThrows(ValidationException.class, () -> useCase.execute(input));
 
@@ -207,11 +210,9 @@ public class DefaultCreateFileUploadTransferChannelUseCaseTest {
         when(fileQueryGateway.findById(eq(expectedFileId)))
                 .thenReturn(Optional.of(file));
 
-        final var input = new CreateFileUploadTransferChannelInput(
+        final CreateFileUploadTransferChannelInput input = new CreateFileUploadTransferChannelInput(
                 expectedFileIdValue,
-                expectedThroughputBytesLimitValue,
-                expectedChunkBytesSizeValue,
-                expectedMaxParallelChunksValue);
+                expectedThroughputBytesLimitValue);
 
         final var actualException = assertThrows(TransferChannelAlreadyOpennedException.class,
                 () -> useCase.execute(input));

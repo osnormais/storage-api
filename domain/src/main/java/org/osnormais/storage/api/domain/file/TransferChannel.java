@@ -5,6 +5,8 @@ import static java.util.Objects.isNull;
 import org.osnormais.storage.api.domain.Entity;
 import org.osnormais.storage.api.domain.exception.ValidationException;
 import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
+import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
+import org.osnormais.storage.api.domain.file.valueobject.Size;
 import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 import org.osnormais.storage.api.domain.validation.ValidationError;
 import org.osnormais.storage.api.domain.validation.handler.Notification;
@@ -37,6 +39,7 @@ public class TransferChannel extends Entity<TransferChannelId> {
         return new TransferChannel(id, status, throughputLimit, chunkSpecification);
     }
 
+    @Deprecated(forRemoval = true)
     public static TransferChannel create(
             final ThroughputLimit throughputLimit,
             final ChunkSpecification chunkSpecification) {
@@ -44,6 +47,38 @@ public class TransferChannel extends Entity<TransferChannelId> {
                 TransferChannelId.unique(),
                 TransferChannelStatus.OPENED,
                 throughputLimit,
+                chunkSpecification);
+    }
+
+    public static TransferChannel create(
+            final ThroughputLimit targetRateLimit,
+            final ThroughputLimit maxRateLimitPerChunk,
+            final ParallelChunkLimit maxParallelChunks,
+            final Size chunkSize) {
+
+        final long targetBps = targetRateLimit.bytesPerSecond();
+        final long maxPerChunkBps = maxRateLimitPerChunk.bytesPerSecond();
+
+        final ParallelChunkLimit parallelChunkLimit;
+        final ThroughputLimit rateLimitPerChunk;
+
+        if (targetBps <= maxPerChunkBps) {
+            parallelChunkLimit = ParallelChunkLimit.of(1);
+            rateLimitPerChunk = targetRateLimit;
+        } else {
+            final long requiredChunks = targetBps / maxPerChunkBps;
+            final int boundedChunks = (int) Math.min(maxParallelChunks.value(), requiredChunks);
+
+            parallelChunkLimit = ParallelChunkLimit.of(boundedChunks);
+            rateLimitPerChunk = maxRateLimitPerChunk;
+        }
+
+        final ChunkSpecification chunkSpecification = ChunkSpecification.create(chunkSize, parallelChunkLimit);
+
+        return new TransferChannel(
+                TransferChannelId.unique(),
+                TransferChannelStatus.OPENED,
+                rateLimitPerChunk,
                 chunkSpecification);
     }
 
