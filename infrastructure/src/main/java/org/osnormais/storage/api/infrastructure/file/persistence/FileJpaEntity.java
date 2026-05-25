@@ -8,17 +8,11 @@ import java.util.UUID;
 
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
-import org.osnormais.storage.api.domain.file.TransferChannel;
-import org.osnormais.storage.api.domain.file.TransferChannelId;
-import org.osnormais.storage.api.domain.file.TransferChannelStatus;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum.Algorithm;
-import org.osnormais.storage.api.domain.file.valueobject.ChunkSpecification;
-import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
 import org.osnormais.storage.api.domain.file.valueobject.Publication;
 import org.osnormais.storage.api.domain.file.valueobject.Publication.Status;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
-import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -52,28 +46,6 @@ public class FileJpaEntity {
     @Column(length = 400)
     private String publicationErrorMessage;
 
-    private UUID uploadChannelId;
-
-    @Enumerated(EnumType.STRING)
-    private TransferChannelStatus uploadChannelStatus;
-
-    private Long uploadChannelThroughputLimitInBytesPerSecond;
-
-    private Long uploadChannelChunkSpecificationSizeInBytes;
-
-    private Integer uploadChannelChunkSpecificationMaxParallelChunkLimit;
-
-    private UUID downloadChannelId;
-
-    @Enumerated(EnumType.STRING)
-    private TransferChannelStatus downloadChannelStatus;
-
-    private Long downloadChannelThroughputLimitInBytesPerSecond;
-
-    private Long downloadChannelChunkSpecificationSizeInBytes;
-
-    private Integer downloadChannelChunkSpecificationMaxParallelChunkLimit;
-
     public FileJpaEntity() {
     }
 
@@ -84,17 +56,7 @@ public class FileJpaEntity {
             String checksumValue,
             Instant publishedAt,
             Status publicationStatus,
-            String publicationErrorMessage,
-            UUID uploadChannelId,
-            TransferChannelStatus uploadChannelStatus,
-            Long uploadChannelThroughputLimitInBytesPerSecond,
-            Long uploadChannelChunkSpecificationSizeInBytes,
-            Integer uploadChannelChunkSpecificationMaxParallelChunkLimit,
-            UUID downloadChannelId,
-            TransferChannelStatus downloadChannelStatus,
-            Long downloadChannelThroughputLimitInBytesPerSecond,
-            Long downloadChannelChunkSpecificationSizeInBytes,
-            Integer downloadChannelChunkSpecificationMaxParallelChunkLimit) {
+            String publicationErrorMessage) {
         this.id = id;
         this.sizeInBytes = sizeInBytes;
         this.checksumAlgorithm = checksumAlgorithm;
@@ -102,16 +64,6 @@ public class FileJpaEntity {
         this.publishedAt = publishedAt;
         this.publicationStatus = publicationStatus;
         this.publicationErrorMessage = publicationErrorMessage;
-        this.uploadChannelId = uploadChannelId;
-        this.uploadChannelStatus = uploadChannelStatus;
-        this.uploadChannelThroughputLimitInBytesPerSecond = uploadChannelThroughputLimitInBytesPerSecond;
-        this.uploadChannelChunkSpecificationSizeInBytes = uploadChannelChunkSpecificationSizeInBytes;
-        this.uploadChannelChunkSpecificationMaxParallelChunkLimit = uploadChannelChunkSpecificationMaxParallelChunkLimit;
-        this.downloadChannelId = downloadChannelId;
-        this.downloadChannelStatus = downloadChannelStatus;
-        this.downloadChannelThroughputLimitInBytesPerSecond = downloadChannelThroughputLimitInBytesPerSecond;
-        this.downloadChannelChunkSpecificationSizeInBytes = downloadChannelChunkSpecificationSizeInBytes;
-        this.downloadChannelChunkSpecificationMaxParallelChunkLimit = downloadChannelChunkSpecificationMaxParallelChunkLimit;
     }
 
     public static FileJpaEntity fromDomain(final File file) {
@@ -127,48 +79,6 @@ public class FileJpaEntity {
                         .map(Publication::error)
                         .orElse(Optional.empty())
                         .map(Publication.Error::message)
-                        .orElse(null),
-                file.getUploadChannel()
-                        .map(TransferChannel::getId)
-                        .map(TransferChannelId::getValue)
-                        .orElse(null),
-                file.getUploadChannel()
-                        .map(TransferChannel::getStatus)
-                        .orElse(null),
-                file.getUploadChannel()
-                        .map(TransferChannel::getThroughputLimit)
-                        .map(ThroughputLimit::bytesPerSecond)
-                        .orElse(null),
-                file.getUploadChannel()
-                        .map(TransferChannel::getChunkSpecification)
-                        .map(ChunkSpecification::size)
-                        .map(Size::bytes)
-                        .orElse(null),
-                file.getUploadChannel()
-                        .map(TransferChannel::getChunkSpecification)
-                        .map(ChunkSpecification::maxParallel)
-                        .map(ParallelChunkLimit::value)
-                        .orElse(null),
-                file.getDownloadChannel()
-                        .map(TransferChannel::getId)
-                        .map(TransferChannelId::getValue)
-                        .orElse(null),
-                file.getDownloadChannel()
-                        .map(TransferChannel::getStatus)
-                        .orElse(null),
-                file.getDownloadChannel()
-                        .map(TransferChannel::getThroughputLimit)
-                        .map(ThroughputLimit::bytesPerSecond)
-                        .orElse(null),
-                file.getDownloadChannel()
-                        .map(TransferChannel::getChunkSpecification)
-                        .map(ChunkSpecification::size)
-                        .map(Size::bytes)
-                        .orElse(null),
-                file.getDownloadChannel()
-                        .map(TransferChannel::getChunkSpecification)
-                        .map(ChunkSpecification::maxParallel)
-                        .map(ParallelChunkLimit::value)
                         .orElse(null));
 
     }
@@ -185,20 +95,6 @@ public class FileJpaEntity {
                                 publicationStatus,
                                 Optional.ofNullable(isNull(publicationErrorMessage) ? null
                                         : Publication.Error.of(publicationErrorMessage))),
-                isNull(uploadChannelId) ? null
-                        : TransferChannel.with(
-                                TransferChannelId.of(uploadChannelId),
-                                uploadChannelStatus,
-                                ThroughputLimit.create(uploadChannelThroughputLimitInBytesPerSecond),
-                                ChunkSpecification.create(Size.of(uploadChannelChunkSpecificationSizeInBytes),
-                                        ParallelChunkLimit.of(uploadChannelChunkSpecificationMaxParallelChunkLimit))),
-                isNull(downloadChannelId) ? null
-                        : TransferChannel.with(
-                                TransferChannelId.of(downloadChannelId),
-                                downloadChannelStatus,
-                                ThroughputLimit.create(downloadChannelThroughputLimitInBytesPerSecond),
-                                ChunkSpecification.create(Size.of(downloadChannelChunkSpecificationSizeInBytes),
-                                        ParallelChunkLimit.of(downloadChannelChunkSpecificationMaxParallelChunkLimit))),
                 null);
 
     }
@@ -257,88 +153,6 @@ public class FileJpaEntity {
 
     public void setPublicationErrorMessage(String publicationErrorMessage) {
         this.publicationErrorMessage = publicationErrorMessage;
-    }
-
-    public UUID getUploadChannelId() {
-        return uploadChannelId;
-    }
-
-    public void setUploadChannelId(UUID uploadChannelId) {
-        this.uploadChannelId = uploadChannelId;
-    }
-
-    public TransferChannelStatus getUploadChannelStatus() {
-        return uploadChannelStatus;
-    }
-
-    public void setUploadChannelStatus(TransferChannelStatus uploadChannelStatus) {
-        this.uploadChannelStatus = uploadChannelStatus;
-    }
-
-    public Long getUploadChannelThroughputLimitInBytesPerSecond() {
-        return uploadChannelThroughputLimitInBytesPerSecond;
-    }
-
-    public void setUploadChannelThroughputLimitInBytesPerSecond(Long uploadChannelThroughputLimitInBytesPerSecond) {
-        this.uploadChannelThroughputLimitInBytesPerSecond = uploadChannelThroughputLimitInBytesPerSecond;
-    }
-
-    public Long getUploadChannelChunkSpecificationSizeInBytes() {
-        return uploadChannelChunkSpecificationSizeInBytes;
-    }
-
-    public void setUploadChannelChunkSpecificationSizeInBytes(Long uploadChannelChunkSpecificationSizeInBytes) {
-        this.uploadChannelChunkSpecificationSizeInBytes = uploadChannelChunkSpecificationSizeInBytes;
-    }
-
-    public Integer getUploadChannelChunkSpecificationMaxParallelChunkLimit() {
-        return uploadChannelChunkSpecificationMaxParallelChunkLimit;
-    }
-
-    public void setUploadChannelChunkSpecificationMaxParallelChunkLimit(
-            Integer uploadChannelChunkSpecificationMaxParallelChunkLimit) {
-        this.uploadChannelChunkSpecificationMaxParallelChunkLimit = uploadChannelChunkSpecificationMaxParallelChunkLimit;
-    }
-
-    public UUID getDownloadChannelId() {
-        return downloadChannelId;
-    }
-
-    public void setDownloadChannelId(UUID downloadChannelId) {
-        this.downloadChannelId = downloadChannelId;
-    }
-
-    public TransferChannelStatus getDownloadChannelStatus() {
-        return downloadChannelStatus;
-    }
-
-    public void setDownloadChannelStatus(TransferChannelStatus downloadChannelStatus) {
-        this.downloadChannelStatus = downloadChannelStatus;
-    }
-
-    public Long getDownloadChannelThroughputLimitInBytesPerSecond() {
-        return downloadChannelThroughputLimitInBytesPerSecond;
-    }
-
-    public void setDownloadChannelThroughputLimitInBytesPerSecond(Long downloadChannelThroughputLimitInBytesPerSecond) {
-        this.downloadChannelThroughputLimitInBytesPerSecond = downloadChannelThroughputLimitInBytesPerSecond;
-    }
-
-    public Long getDownloadChannelChunkSpecificationSizeInBytes() {
-        return downloadChannelChunkSpecificationSizeInBytes;
-    }
-
-    public void setDownloadChannelChunkSpecificationSizeInBytes(Long downloadChannelChunkSpecificationSizeInBytes) {
-        this.downloadChannelChunkSpecificationSizeInBytes = downloadChannelChunkSpecificationSizeInBytes;
-    }
-
-    public Integer getDownloadChannelChunkSpecificationMaxParallelChunkLimit() {
-        return downloadChannelChunkSpecificationMaxParallelChunkLimit;
-    }
-
-    public void setDownloadChannelChunkSpecificationMaxParallelChunkLimit(
-            Integer downloadChannelChunkSpecificationMaxParallelChunkLimit) {
-        this.downloadChannelChunkSpecificationMaxParallelChunkLimit = downloadChannelChunkSpecificationMaxParallelChunkLimit;
     }
 
     @Override

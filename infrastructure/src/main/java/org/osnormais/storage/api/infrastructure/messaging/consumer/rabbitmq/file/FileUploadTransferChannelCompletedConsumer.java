@@ -4,8 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Set;
 
-import org.osnormais.storage.api.application.usecase.file.finalize.FinalizeFileInput;
-import org.osnormais.storage.api.application.usecase.file.finalize.FinalizeFileUseCase;
+import org.osnormais.storage.api.application.usecase.file.publish.PublishFileUseCase;
 import org.osnormais.storage.api.domain.exception.FileAlreadyPublishedException;
 import org.osnormais.storage.api.infrastructure.file.data.message.FileUploadTransferChannelCompletedMessage;
 import org.osnormais.storage.api.infrastructure.messaging.consumer.rabbitmq.RabbitMQMessageConsumer;
@@ -15,12 +14,12 @@ import org.springframework.messaging.Message;
 public class FileUploadTransferChannelCompletedConsumer
         extends RabbitMQMessageConsumer<FileUploadTransferChannelCompletedMessage> {
 
-    private final FinalizeFileUseCase finalizeFileUseCase;
+    private final PublishFileUseCase finalizeFileUseCase;
 
     public FileUploadTransferChannelCompletedConsumer(
             final Long maxRetryAttempts,
             final MessageProducer<Message<FileUploadTransferChannelCompletedMessage>> errorMessageProducer,
-            final FinalizeFileUseCase finalizeFileUseCase) {
+            final PublishFileUseCase finalizeFileUseCase) {
         super(maxRetryAttempts, errorMessageProducer, Set.of(FileAlreadyPublishedException.class));
         this.finalizeFileUseCase = requireNonNull(finalizeFileUseCase);
     }
@@ -29,7 +28,7 @@ public class FileUploadTransferChannelCompletedConsumer
     public void consume(final Message<FileUploadTransferChannelCompletedMessage> message) {
 
         finalizeFileUseCase
-                .execute(new FinalizeFileInput(message.getPayload().fileId()));
+                .execute(null);
 
     }
 

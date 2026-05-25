@@ -14,18 +14,9 @@ import org.osnormais.storage.api.application.usecase.file.chunk.upload.DefaultUp
 import org.osnormais.storage.api.application.usecase.file.chunk.upload.UploadFileChunkUseCase;
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileUseCase;
 import org.osnormais.storage.api.application.usecase.file.create.DefaultCreateFileUseCase;
-import org.osnormais.storage.api.application.usecase.file.finalize.DefaultFinalizeFileUseCase;
-import org.osnormais.storage.api.application.usecase.file.finalize.FinalizeFileUseCase;
-import org.osnormais.storage.api.application.usecase.file.transferchannel.download.create.CreateFileDownloadTransferChannelUseCase;
-import org.osnormais.storage.api.application.usecase.file.transferchannel.download.create.DefaultCreateFileDownloadTransferChannelUseCase;
-import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.complete.CompleteFileUploadTransferChannelUseCase;
-import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.complete.DefaultCompleteFileUploadTransferChannelUseCase;
-import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.CreateFileUploadTransferChannelUseCase;
-import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.create.DefaultCreateFileUploadTransferChannelUseCase;
-import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.DefaultRetrieveFileUploadTransferChannelUseCase;
-import org.osnormais.storage.api.application.usecase.file.transferchannel.upload.retrieve.RetrieveFileUploadTransferChannelUseCase;
+import org.osnormais.storage.api.application.usecase.file.publish.DefaultPublishFileUseCase;
+import org.osnormais.storage.api.application.usecase.file.publish.PublishFileUseCase;
 import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
-import org.osnormais.storage.api.infrastructure.configuration.properties.ApplicationProps;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -40,8 +31,6 @@ public class FileUseCaseConfig {
     private final FileFinalizer fileFinalizer;
     private final DomainEventDispatcher domainEventDispatcher;
 
-    private final ApplicationProps applicationProps;
-
     public FileUseCaseConfig(
             final FileCommandGateway fileCommandGateway,
             final FileQueryGateway fileQueryGateway,
@@ -49,8 +38,7 @@ public class FileUseCaseConfig {
             final ChunkWriter chunkWriter,
             final ChunkReader chunkReader,
             final FileFinalizer fileFinalizer,
-            final DomainEventDispatcher domainEventDispatcher,
-            final ApplicationProps applicationProps) {
+            final DomainEventDispatcher domainEventDispatcher) {
         this.fileCommandGateway = requireNonNull(fileCommandGateway);
         this.fileQueryGateway = requireNonNull(fileQueryGateway);
         this.concurrencyTrackerPort = requireNonNull(concurrencyTrackerPort);
@@ -58,27 +46,11 @@ public class FileUseCaseConfig {
         this.chunkReader = requireNonNull(chunkReader);
         this.fileFinalizer = requireNonNull(fileFinalizer);
         this.domainEventDispatcher = requireNonNull(domainEventDispatcher);
-        this.applicationProps = requireNonNull(applicationProps);
     }
 
     @Bean
     CreateFileUseCase createFileUseCase() {
         return new DefaultCreateFileUseCase(fileCommandGateway);
-    }
-
-    @Bean
-    CreateFileUploadTransferChannelUseCase createFileUploadTransferChannelUseCase() {
-        return new DefaultCreateFileUploadTransferChannelUseCase(
-                fileQueryGateway,
-                fileCommandGateway,
-                applicationProps.transferChannel().upload().chunkSizeBytes(),
-                applicationProps.transferChannel().upload().chunkMaxParallel(),
-                applicationProps.transferChannel().upload().chunkMaxBytesPerSecond());
-    }
-
-    @Bean
-    RetrieveFileUploadTransferChannelUseCase retrieveFileUploadTransferChannelUseCase() {
-        return new DefaultRetrieveFileUploadTransferChannelUseCase(fileQueryGateway);
     }
 
     @Bean
@@ -90,27 +62,12 @@ public class FileUseCaseConfig {
     }
 
     @Bean
-    CompleteFileUploadTransferChannelUseCase completeFileUploadTransferChannelUseCase() {
-        return new DefaultCompleteFileUploadTransferChannelUseCase(
-                fileQueryGateway,
-                fileCommandGateway,
-                domainEventDispatcher);
-    }
-
-    @Bean
-    FinalizeFileUseCase finalizeFileUseCase() {
-        return new DefaultFinalizeFileUseCase(
+    PublishFileUseCase finalizeFileUseCase() {
+        return new DefaultPublishFileUseCase(
                 fileQueryGateway,
                 fileCommandGateway,
                 fileFinalizer,
                 domainEventDispatcher);
-    }
-
-    @Bean
-    CreateFileDownloadTransferChannelUseCase createFileDownloadTransferChannelUseCase() {
-        return new DefaultCreateFileDownloadTransferChannelUseCase(
-                fileQueryGateway,
-                fileCommandGateway);
     }
 
     @Bean

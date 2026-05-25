@@ -6,8 +6,6 @@ import java.io.InputStream;
 
 import org.osnormais.storage.api.application.port.ChunkReader;
 import org.osnormais.storage.api.domain.file.FileId;
-import org.osnormais.storage.api.domain.file.valueobject.Size;
-import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 
 public class StorageChunkReader implements ChunkReader {
 
@@ -21,8 +19,8 @@ public class StorageChunkReader implements ChunkReader {
     public InputStream readChunk(
             final FileId key,
             final Long chunkOffset,
-            final Size chunkSize,
-            final ThroughputLimit throughputLimit) {
+            final Long chunkSizeInBytes,
+            final Long throughputLimitInBytesPerSecond) {
 
         final StorageKey storageKey = StorageKey.create(key.getStringValue()).subKey("data");
 
@@ -30,8 +28,8 @@ public class StorageChunkReader implements ChunkReader {
                 .read(
                         storageKey,
                         chunkOffset,
-                        chunkSize.bytes(),
-                        throughputLimit.bytesPerSecond());
+                        chunkSizeInBytes,
+                        throughputLimitInBytesPerSecond);
 
     }
 

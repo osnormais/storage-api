@@ -1,4 +1,4 @@
-package org.osnormais.storage.api.application.usecase.file.finalize;
+package org.osnormais.storage.api.application.usecase.file.publish;
 
 import static java.util.Objects.requireNonNull;
 
@@ -11,14 +11,14 @@ import org.osnormais.storage.api.domain.event.DomainEventDispatcher;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
 
-public class DefaultFinalizeFileUseCase extends FinalizeFileUseCase {
+public class DefaultPublishFileUseCase extends PublishFileUseCase {
 
     private final FileQueryGateway fileQueryGateway;
     private final FileCommandGateway fileCommandGateway;
     private final FileFinalizer fileFinalizer;
     private final DomainEventDispatcher eventDispatcher;
 
-    public DefaultFinalizeFileUseCase(
+    public DefaultPublishFileUseCase(
             final FileQueryGateway fileQueryGateway,
             final FileCommandGateway fileCommandGateway,
             final FileFinalizer fileFinalizer,
@@ -31,7 +31,7 @@ public class DefaultFinalizeFileUseCase extends FinalizeFileUseCase {
 
     @Transactional
     @Override
-    public void execute(final FinalizeFileInput input) {
+    public void execute(final PublishFileInput input) {
 
         final FileId fileId = FileId.of(input.fileId());
 
@@ -39,7 +39,7 @@ public class DefaultFinalizeFileUseCase extends FinalizeFileUseCase {
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        file.publicate(() -> fileFinalizer.finalize(file));
+        file.publicate(() -> fileFinalizer.finalize(file, input.chunkSizeInBytes()));
 
         eventDispatcher.dispatch(eventDispatcher.append(fileCommandGateway.update(file)));
 

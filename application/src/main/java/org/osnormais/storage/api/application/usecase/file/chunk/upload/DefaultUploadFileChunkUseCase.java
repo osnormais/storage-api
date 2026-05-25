@@ -6,17 +6,12 @@ import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.exception.ChunkIntegrityViolationException;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
-import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.application.port.ChunkWriter;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
-import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
-import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
-import org.osnormais.storage.api.domain.file.valueobject.Size;
-import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 
 public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
 
@@ -39,6 +34,9 @@ public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
 
         final FileId fileId = FileId.of(input.fileId());
         final Long chunkIndex = input.chunkIndex();
+        final Long chunkSize = input.chunkSize();
+        final Integer maxParallelChunks = input.maxParallelChunks();
+        final Long throughputLimit = input.throughputLimit();
         final InputStream chunkData = input.chunkData();
 
         final Checksum checksum = Checksum.of(input.checksumAlgorithm(), input.checksumValue());
@@ -47,16 +45,10 @@ public class DefaultUploadFileChunkUseCase extends UploadFileChunkUseCase {
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        final TransferChannel uploadChannel = file
-                .getUploadChannel()
-                .filter(TransferChannel::isOpen)
-                .orElseThrow(() -> TransferChannelNotAvailableException.upload(fileId));
+        if (file.isPublished())// TODO exception específica
+            throw new RuntimeException(String.format("File with id %s is already published", fileId.getValue()));
 
-        final Size chunkSize = uploadChannel.getChunkSpecification().effectiveChunkSize(file.getSize(), chunkIndex);
-        final ParallelChunkLimit maxParallelChunks = uploadChannel.getChunkSpecification().maxParallel();
-        final ThroughputLimit throughputLimit = uploadChannel.getThroughputLimit();
-
-        if (!concurrencyTracker.tryIncrement(fileId, maxParallelChunks.value()))
+        if (!concurrencyTracker.tryIncrement(fileId, maxParallelChunks))
             throw ConcurrentChunkLimitExceededException.create(maxParallelChunks);
 
         try {
