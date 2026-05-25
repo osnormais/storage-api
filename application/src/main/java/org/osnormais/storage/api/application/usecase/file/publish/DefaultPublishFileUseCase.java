@@ -39,9 +39,11 @@ public class DefaultPublishFileUseCase extends PublishFileUseCase {
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        file.publicate(() -> fileFinalizer.finalize(file, input.chunkSizeInBytes()));
+        file.publish(() -> fileFinalizer.finalize(file, input.chunkSizeInBytes()));
 
-        eventDispatcher.dispatch(eventDispatcher.append(fileCommandGateway.update(file)));
+        fileCommandGateway.update(file);
+
+        eventDispatcher.dispatch(eventDispatcher.append(file));
 
     }
 

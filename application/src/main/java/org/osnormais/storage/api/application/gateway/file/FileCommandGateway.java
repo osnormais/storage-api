@@ -4,8 +4,8 @@ import org.osnormais.storage.api.domain.file.File;
 
 public interface FileCommandGateway {
 
-    File create(File file);
+    void create(File file);
 
-    File update(File file);
+    void update(File file);
 
 }

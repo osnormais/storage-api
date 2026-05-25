@@ -100,16 +100,13 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                 new LinkedList<>());
     }
 
-    public File publicate(final Supplier<Checksum> checksumSupplier) {
+    public File publish(final Supplier<Checksum> checksumSupplier) {
 
         if (isNull(checksumSupplier))
             throw InvalidArgumentException.with("'checksumSupplier' should not be null");
 
         if (isPublished())
             throw FileAlreadyPublishedException.create(this);
-
-        // if (hasOpenUploadChannel())
-        // throw FileUploadInProgressException.create(this);
 
         final Checksum checksum = checksumSupplier.get();
 
