@@ -43,7 +43,7 @@ public class DraftFileController {
         this.downloadFileChunkUseCase = downloadFileChunkUseCase;
     }
 
-    @GetMapping
+    @GetMapping("{fileId}/chunks")
     public ResponseEntity<StreamingResponseBody> getChunkInputStream(
             @RequestHeader UUID fileId,
             @RequestHeader Long chunkSize,
@@ -88,10 +88,10 @@ public class DraftFileController {
 
     }
 
-    @PostMapping("{fileId}/chunks/{chunkIndex}")
+    @PostMapping("{fileId}/chunks")
     public ResponseEntity<Void> uploadFileChunk(
-            @PathVariable("X-File-Id") UUID fileId,
-            @PathVariable("X-Chunk-Index") Long chunkIndex,
+            @PathVariable("fileId") UUID fileId,
+            @RequestHeader("X-Chunk-Index") Long chunkIndex,
             @RequestHeader("X-Chunk-Size") Long chunkSize,
             @RequestHeader("X-Max-Parallel-Chunks") Integer maxParallelChunks,
             @RequestHeader("X-Throughput-Limit") Long throughputLimit,
