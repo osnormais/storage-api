@@ -61,8 +61,7 @@ spring:
           fileCreatedIntegration-in-0:
             consumer:
               exchangeType: topic
-              # bindingRoutingKeyDelimiter: ','
-              bindingRoutingKey: drive.file.created #;; storage.retry.drive.file.created
+              bindingRoutingKey: drive.file.created
               queueNameGroupOnly: true
               autoBindDlq: true
               deadLetterExchange: storage.exchange.wait
