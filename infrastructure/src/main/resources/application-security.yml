@@ -1,0 +1,18 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${keycloak.realm-url}/protocol/openid-connect/certs
+          issuer-uri: ${keycloak.realm-url}
+
+security:
+  cors:
+    - pattern: ${CORS_PATTERN}
+      allowed-origins: ${CORS_ALLOWED_ORIGINS}
+      allowed-methods: ${CORS_ALLOWED_METHODS}
+      allowed-headers: ${CORS_ALLOWED_HEADERS}
+      allow-credentials: ${CORS_ALLOW_CREDENTIALS}
+
+keycloak:
+  realm-url: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}

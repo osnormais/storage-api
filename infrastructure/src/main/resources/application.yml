@@ -3,26 +3,24 @@ server:
 spring:
   profiles:
     active:
+      - security
       - spring-cloud
       - hibernate
       - ${application.vendor.messaging}
       - ${application.vendor.concurrency-tracker}
       - ${application.vendor.database}
       - ${application.vendor.storage}
+      - ${application.token.signature.public-key.source}
 
 application:
   name: storage-api
   server:
     port: ${SERVER_PORT:8080}
-  transfer-channel:
-    upload:
-      chunk-size-bytes: ${TRANSFER_CHANNEL_UPLOAD_CHUNK_SIZE:10485760} # 10MB
-      chunk-max-parallel: ${TRANSFER_CHANNEL_UPLOAD_MAX_PARALLEL_UPLOADS:10}
-      chunk-max-bytes-per-second: ${TRANSFER_CHANNEL_UPLOAD_MAX_BYTES_PER_SECOND:1048576} # 1MB/s
-    download:
-      chunk-size-bytes: ${TRANSFER_CHANNEL_DOWNLOAD_CHUNK_SIZE:10485760} # 10MB
-      chunk-max-parallel: ${TRANSFER_CHANNEL_DOWNLOAD_MAX_PARALLEL_DOWNLOADS:10}
-      chunk-max-bytes-per-second: ${TRANSFER_CHANNEL_DOWNLOAD_MAX_BYTES_PER_SECOND:1048576} # 1MB/s
+  token:
+    signature:
+      algorithm: ${APPLICATION_TOKEN_SIGNATURE_ALGORITHM:ECDSA256}
+      public-key:
+        source: ${TOKEN_SIGNATURE_PUBLIC_KEY_SOURCE:env}
   messaging:
     private:
       consumer:
