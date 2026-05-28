@@ -24,9 +24,9 @@ application:
   messaging:
     private:
       consumer:
-        file-upload-transfer-channel-completed:
-          concurrency: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_CONCURRENCY:1}
-          max-attempts: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_MAX_ATTEMPTS:5}
+        create-file-command:
+          concurrency: ${CONSUMER_CREATE_FILE_COMMAND_CONCURRENCY:1}
+          max-attempts: ${CONSUMER_CREATE_FILE_COMMAND_MAX_ATTEMPTS:5}
     public:
       consumer:
         drive-file-created:

@@ -7,31 +7,31 @@ import java.util.Set;
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileInput;
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileUseCase;
 import org.osnormais.storage.api.infrastructure.exception.ResourceAlreadyExistsException;
-import org.osnormais.storage.api.infrastructure.file.data.message.integration.drive.DriveFileIntegrationMessage;
+import org.osnormais.storage.api.infrastructure.file.data.message.command.CreateFileCommand;
 import org.osnormais.storage.api.infrastructure.messaging.consumer.rabbitmq.RabbitMQMessageConsumer;
 import org.osnormais.storage.api.infrastructure.messaging.producer.MessageProducer;
 import org.springframework.messaging.Message;
 
-public class DriveFileCreatedConsumer
-        extends RabbitMQMessageConsumer<DriveFileIntegrationMessage> {
+public class CreateFileCommandConsumer extends RabbitMQMessageConsumer<CreateFileCommand> {
 
     private final CreateFileUseCase createFileUseCase;
 
-    public DriveFileCreatedConsumer(
+    public CreateFileCommandConsumer(
             final Long maxRetryAttempts,
-            final MessageProducer<Message<DriveFileIntegrationMessage>> errorMessageProducer,
+            final MessageProducer<Message<CreateFileCommand>> errorMessageProducer,
             final CreateFileUseCase createFileUseCase) {
         super(maxRetryAttempts, errorMessageProducer, Set.of(ResourceAlreadyExistsException.class));
         this.createFileUseCase = requireNonNull(createFileUseCase);
     }
 
     @Override
-    public void consume(final Message<DriveFileIntegrationMessage> message) {
+    public void consume(final Message<CreateFileCommand> message) {
 
+        // TODO testar wait
         createFileUseCase
                 .execute(new CreateFileInput(
                         message.getPayload().id(),
-                        message.getPayload().size(),
+                        message.getPayload().sizeInBytes(),
                         message.getPayload().checksumValue(),
                         message.getPayload().checksumAlgorithm()));
 

@@ -1,40 +1,71 @@
 spring:
   cloud:
     function:
-      definition: fileUploadTransferChannelCompletedConsumer;driveFileCreatedConsumer
+      definition: driveFileCreatedIntegrationConsumer;createFileCommandConsumer
     stream:
       function:
         bindings:
-          fileUploadTransferChannelCompletedConsumer-in-0: fileUploadTransferChannelCompleted-in-0
-          driveFileCreatedConsumer-in-0: driveFileCreated-in-0
+          driveFileCreatedIntegrationConsumer-in-0: fileCreatedIntegration-in-0
+          driveFileCreatedIntegrationConsumer-in-1: fileCreatedIntegrationRetry-in-0
+          createFileCommandConsumer-in-0: createFileCommand-in-0
       default:
         content-type: application/json
       bindings:
+
         ###### -------- DOMAIN EVENTS -------- ######
         ## SpringCloud bindings                    ##
-        # Incoming <- File Upload Completed         #
-        fileUploadTransferChannelCompleted-in-0:
-          destination: storage.exchange
-          group: storage.file:upload-transfer-channel.completed.queue
+
+        ## --------------------------------------- ##
+
+        ###### ------ PRIVATE MESSAGES ------- ######
+        ## Create File --------------------------- ##
+        # Outgoing -> Create File                   #
+        createFileCommand-out-0:
+          destination: command.exchange
+        # Outgoing -> Create File (error)           #
+        createFileCommandError-out-0:
+          destination: command.exchange.error
+          producer:
+            requiredGroups: command:create-file.queue.error
+        # Incoming <- Create File                   #
+        createFileCommand-in-0:
+          destination: command.exchange
+          group: command:create-file.queue
           consumer:
             max-attempts: 1
-            concurrency: ${application.messaging.private.consumer.file-upload-transfer-channel-completed.concurrency}
+            concurrency: 1 #${application.messaging.private.consumer.create-file.concurrency}
         ## --------------------------------------- ##
-        # Outgoing -> File Upload Completed         #
-        fileUploadTransferChannelCompleted-out-0:
-          destination: storage.exchange
-        fileUploadTransferChannelCompletedError-out-0:
+
+        ###### -------- PUBLIC MESSAGES -------- ######
+        ## ----------------------------------------- ##
+        # Incoming <- File Created Integration ----   #
+        fileCreatedIntegration-in-0:
+          binder: public-binder
+          destination: integration.exchange
+          group: storage.drive.file.created.queue
+          consumer:
+            max-attempts: 1
+            concurrency: ${application.messaging.public.consumer.drive-file-created.concurrency}
+        # Outgoing -> File Created Integration (error) #
+        fileCreatedIntegrationError-out-0:
+          binder: public-binder
           destination: storage.exchange.error
           producer:
-            requiredGroups: storage.file:upload-transfer-channel.completed.queue.error
-        ## --------------------------------------- ##
-        ###### ------- PUBLIC MESSAGES ------- ######
-        ## --------------------------------------- ##
-        # Incoming <- File Created                  #
-        driveFileCreated-in-0:
+            requiredGroups: storage.drive.file.created.queue.error
+        ## File Created Integration (retry) --------- ##
+        # Incoming <- File Created Integration (retry) #
+        fileCreatedIntegrationRetry-in-0:
           binder: public-binder
           destination: storage.exchange
-          group: drive:storage.file.created.queue
+          group: storage.drive.file.created.queue.retry
+          consumer:
+            max-attempts: 1
+            concurrency: ${application.messaging.public.consumer.drive-file-created.concurrency}
+        ## ------------------------------------------ ##
+        driveFileCreated-in-0:
+          binder: public-binder
+          destination: integration.exchange
+          group: storage.drive.file.created.queue.old
           consumer:
             max-attempts: 1
             concurrency: ${application.messaging.public.consumer.drive-file-created.concurrency}
@@ -44,5 +75,5 @@ spring:
           binder: public-binder
           destination: storage.exchange.error
           producer:
-            requiredGroups: drive:storage.file.created.queue.error
+            requiredGroups: storage.drive.file.created.queue.error
         ## --------------------------------------- ##

@@ -26,58 +26,72 @@ spring:
       rabbit:
         bindings:
           ###### -------- DOMAIN EVENTS -------- ######
-          ## RabbitMQ bindings                       ##
-          # Incoming <- File Upload Completed         #
-          fileUploadTransferChannelCompleted-in-0:
+          ## --------------------------------------- ##
+
+          ###### ------ PRIVATE MESSAGES ------- ######
+          ## Create File --------------------------- ##
+          # Outgoing -> Create File                   #
+          createFileCommand-out-0:
+            producer:
+              exchangeType: topic
+              routingKeyExpression: "'create-file'"
+          # Outgoing -> Create File (error)           #
+          createFileCommandError-out-0:
+            producer:
+              exchangeType: topic
+              routingKeyExpression: "'create-file'"
+              queueNameGroupOnly: true
+          # Incoming <- Create File                   #
+          createFileCommand-in-0:
             consumer:
               exchangeType: topic
-              bindingRoutingKey: storage.file:upload-transfer-channel.completed
+              bindingRoutingKey: create-file
+              queueNameGroupOnly: true
+              autoBindDlq: true
+              deadLetterExchange: command.exchange.wait
+              deadLetterQueueName: command:create-file.queue.wait
+              dlqDeadLetterExchange: command.exchange
+              dlqDeadLetterRoutingKey: create-file
+              republishToDlq: false
+              dlqTtl: 1000
+
+          ###### ------- PUBLIC MESSAGES ------- ######
+          ## File Created Integration -------------- ##
+          # Incoming <- File Created Integration      #
+          fileCreatedIntegration-in-0:
+            consumer:
+              exchangeType: topic
+              # bindingRoutingKeyDelimiter: ','
+              bindingRoutingKey: drive.file.created #;; storage.retry.drive.file.created
               queueNameGroupOnly: true
               autoBindDlq: true
               deadLetterExchange: storage.exchange.wait
-              deadLetterQueueName: storage.file:upload-transfer-channel.completed.queue.wait
+              deadLetterQueueName: storage.drive.file.created.queue.wait
               dlqDeadLetterExchange: storage.exchange
-              dlqDeadLetterRoutingKey: storage.file:upload-transfer-channel.completed
+              dlqDeadLetterRoutingKey: drive.file.created
               republishToDlq: false
-              dlqTtl: 5000
-          ## --------------------------------------- ##
-          # Outgoing -> File Upload Completed         #
-          fileUploadTransferChannelCompleted-out-0:
+              dlqTtl: 1000
+          ## ------------------------------------------ ##
+          # Outgoing -> File Created Integration (error) #
+          fileCreatedIntegrationError-out-0:
             producer:
               exchangeType: topic
-              destination: storage.exchange
-              routingKeyExpression: "'storage.file:upload-transfer-channel.completed'"
-          fileUploadTransferChannelCompletedError-out-0:
-            producer:
-              exchangeType: topic
-              destination: storage.exchange.error
-              routingKeyExpression: "'storage.file:upload-transfer-channel.completed'"
+              routingKeyExpression: "'create-file'"
               queueNameGroupOnly: true
-          ## --------------------------------------- ##
-          ###### ------- PUBLIC MESSAGES ------- ######
-          ## --------------------------------------- ##
-          # Incoming <- File Created                  #
-          driveFileCreated-in-0:
+          ## File Created Integration (retry) ------ ##
+          # Incoming <- File Created Integration      #
+          fileCreatedIntegrationRetry-in-0:
             consumer:
               exchangeType: topic
               bindingRoutingKey: drive.file.created
               queueNameGroupOnly: true
               autoBindDlq: true
               deadLetterExchange: storage.exchange.wait
-              deadLetterQueueName: drive:storage.file.created.queue.wait
+              deadLetterQueueName: storage.drive.file.created.queue.wait
               dlqDeadLetterExchange: storage.exchange
               dlqDeadLetterRoutingKey: drive.file.created
               republishToDlq: false
               dlqTtl: 1000
-          ## --------------------------------------- ##
-          ## --------------------------------------- ##
-          # Outgoing -> File Upload Completed         #
-          driveFileCreatedError-out-0:
-            producer:
-              exchangeType: topic
-              destination: storage.exchange.error
-              routingKeyExpression: "'drive.file.created'"
-              queueNameGroupOnly: true
           ## --------------------------------------- ##
 
 rabbitmq:
