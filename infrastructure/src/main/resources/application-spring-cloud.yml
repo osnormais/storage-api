@@ -33,7 +33,7 @@ spring:
           group: command:create-file.queue
           consumer:
             max-attempts: 1
-            concurrency: 1 #${application.messaging.private.consumer.create-file.concurrency}
+            concurrency: ${application.messaging.private.consumer.create-file-command.concurrency}
         ## --------------------------------------- ##
 
         ###### -------- PUBLIC MESSAGES -------- ######
