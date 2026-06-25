@@ -62,7 +62,7 @@ public class FileUseCaseConfig {
     }
 
     @Bean
-    PublishFileUseCase finalizeFileUseCase() {
+    PublishFileUseCase publishFileUseCase() {
         return new DefaultPublishFileUseCase(
                 fileQueryGateway,
                 fileCommandGateway,
