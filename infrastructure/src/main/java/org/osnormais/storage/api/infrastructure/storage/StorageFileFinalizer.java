@@ -20,13 +20,13 @@ public class StorageFileFinalizer implements FileFinalizer {
     }
 
     @Override
-    public Checksum finalize(final File file, final Long chunkSizeInBytes) {
+    public Checksum finalize(final File file) {
 
         final StorageKey storageKey = StorageKey.of(file.getId().getStringValue());
         final Size fileSize = file.getSize();
         final Checksum.Algorithm checksumAlgorithm = file.getChecksum().algorithm();
 
-        assembler.assemble(storageKey, fileSize.bytes(), chunkSizeInBytes);
+        assembler.assemble(storageKey, fileSize.bytes());
 
         return checksumProvider.calculateChecksum(storageKey, checksumAlgorithm);
 

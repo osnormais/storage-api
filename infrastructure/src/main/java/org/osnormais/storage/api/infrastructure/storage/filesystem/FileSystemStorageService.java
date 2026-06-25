@@ -82,13 +82,32 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public void assemble(final StorageKey key, final Long fileSize, final Long chunkSize) {
+    public void assemble(final StorageKey key, final Long fileSize) {
 
         final StorageKey finalFileKey = key.subKey("data");
         final StorageKey chunksKey = key.subKey("upload", "chunks");
 
-        final Set<SequentialIterator.Item<Path>> items = FileSystemUtils
-                .listFiles(toPath(chunksKey))
+        final Path finalFilePath = toPath(finalFileKey);
+        final Set<Path> chunkPaths = FileSystemUtils.listFiles(toPath(chunksKey));
+
+        final Long startWritePosition;
+        Long offsetCorrection;
+        if (FileSystemUtils.exists(finalFilePath)) {
+            final Long actualFinalFileSize = FileSystemUtils.size(finalFilePath);
+            final Long totalChunkSize = chunkPaths
+                    .stream()
+                    .filter(Files::isRegularFile)
+                    .mapToLong(FileSystemUtils::size)
+                    .sum();
+            offsetCorrection = (actualFinalFileSize + totalChunkSize) - fileSize;
+
+            startWritePosition = actualFinalFileSize - offsetCorrection;
+        } else {
+            offsetCorrection = 0L;
+            startWritePosition = 0L;
+        }
+
+        final Set<SequentialIterator.Item<Path>> items = chunkPaths
                 .stream()
                 .map(chunkPath -> SequentialIterator.Item
                         .of(chunkPath, Long.valueOf(chunkPath.getFileName().toString())))
@@ -97,25 +116,18 @@ public class FileSystemStorageService implements StorageService {
         final SequentialIterator<Path> iterator = SequentialIterator.of(items);
 
         try (final FileChannel outputChannel = FileSystemUtils.openChannel(
-                toPath(finalFileKey),
+                finalFilePath,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.WRITE)) {
 
+            outputChannel.position(startWritePosition);
+
             while (iterator.hasNext()) {
 
-                final Long chunkPosition = iterator.currentPosition();
                 final Path chunkPath = iterator.next();
 
                 if (!FileSystemUtils.exists(chunkPath))
                     continue;
-
-                final Long offset = calculateOffset(
-                        chunkSize,
-                        Files.size(chunkPath),
-                        chunkPosition,
-                        fileSize);
-
-                outputChannel.position(offset);
 
                 try (final FileChannel inputChannel = FileSystemUtils.openChannel(chunkPath, StandardOpenOption.READ)) {
                     FileSystemUtils.append(outputChannel, inputChannel);

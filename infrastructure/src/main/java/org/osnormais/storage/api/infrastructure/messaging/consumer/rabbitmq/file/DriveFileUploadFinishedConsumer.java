@@ -26,9 +26,7 @@ public class DriveFileUploadFinishedConsumer extends RabbitMQMessageConsumer<Dri
     @Override
     public void consume(final Message<DriveFileUploadFinishedMessage> message) {
 
-        publishFileUseCase.execute(new PublishFileInput(
-                message.getPayload().fileId(),
-                message.getPayload().chunkSizeInBytes()));
+        publishFileUseCase.execute(new PublishFileInput(message.getPayload().fileId()));
 
     }
 

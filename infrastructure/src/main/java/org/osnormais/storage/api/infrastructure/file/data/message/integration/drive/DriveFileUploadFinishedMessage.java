@@ -3,6 +3,6 @@ package org.osnormais.storage.api.infrastructure.file.data.message.integration.d
 import java.io.Serializable;
 import java.util.UUID;
 
-public record DriveFileUploadFinishedMessage(UUID fileId, Long chunkSizeInBytes) implements Serializable {
+public record DriveFileUploadFinishedMessage(UUID fileId) implements Serializable {
 
 }
