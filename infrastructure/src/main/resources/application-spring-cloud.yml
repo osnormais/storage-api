@@ -1,13 +1,16 @@
 spring:
   cloud:
     function:
-      definition: driveFileCreatedIntegrationConsumer;createFileCommandConsumer
+      definition: driveFileCreatedIntegrationConsumer;createFileCommandConsumer;driveFilePublicationInitiatedIntegrationConsumer;publishFileCommandConsumer
     stream:
       function:
         bindings:
           driveFileCreatedIntegrationConsumer-in-0: fileCreatedIntegration-in-0
           driveFileCreatedIntegrationConsumer-in-1: fileCreatedIntegrationRetry-in-0
           createFileCommandConsumer-in-0: createFileCommand-in-0
+          driveFilePublicationInitiatedIntegrationConsumer-in-0: filePublicationInitiatedIntegration-in-0
+          driveFilePublicationInitiatedIntegrationConsumer-in-1: filePublicationInitiatedIntegrationRetry-in-0
+          publishFileCommandConsumer-in-0: publishFileCommand-in-0
       default:
         content-type: application/json
       bindings:
@@ -34,6 +37,23 @@ spring:
           consumer:
             max-attempts: 1
             concurrency: ${application.messaging.private.consumer.create-file-command.concurrency}
+        ## --------------------------------------- ##
+        ## Publish File -------------------------- ##
+        # Outgoing -> Publish File                  #
+        publishFileCommand-out-0:
+          destination: command.exchange
+        # Outgoing -> Publish File (error)          #
+        publishFileCommandError-out-0:
+          destination: command.exchange.error
+          producer:
+            requiredGroups: command:publish-file.queue.error
+        # Incoming <- Publish File                  #
+        publishFileCommand-in-0:
+          destination: command.exchange
+          group: command:publish-file.queue
+          consumer:
+            max-attempts: 1
+            concurrency: ${application.messaging.private.consumer.publish-file-command.concurrency}
         ## --------------------------------------- ##
 
         ###### -------- PUBLIC MESSAGES -------- ######
@@ -62,18 +82,21 @@ spring:
             max-attempts: 1
             concurrency: ${application.messaging.public.consumer.drive-file-created.concurrency}
         ## ------------------------------------------ ##
-        driveFileCreated-in-0:
+        filePublicationInitiatedIntegration-in-0:
           binder: public-binder
           destination: integration.exchange
-          group: storage.drive.file.created.queue.old
+          group: storage.drive.file:publication.initiated.queue
           consumer:
             max-attempts: 1
-            concurrency: ${application.messaging.public.consumer.drive-file-created.concurrency}
-        ## --------------------------------------- ##
-        # Outgoing -> File Upload Completed         #
-        driveFileCreatedError-out-0:
+            concurrency: ${application.messaging.public.consumer.drive-file-publication-initiated.concurrency}
+        ## ------------------------------------------ ##
+        ## ------------------------------------------ ##
+        filePublicationInitiatedIntegrationRetry-in-0:
           binder: public-binder
-          destination: storage.exchange.error
-          producer:
-            requiredGroups: storage.drive.file.created.queue.error
-        ## --------------------------------------- ##
+          destination: storage.exchange
+          group: storage.drive.file:publication.initiated.queue.retry
+          consumer:
+            max-attempts: 1
+            concurrency: ${application.messaging.public.consumer.drive-file-publication-initiated.concurrency}
+        ## ------------------------------------------ ##
+

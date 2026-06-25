@@ -185,19 +185,6 @@ public class FileSystemStorageService implements StorageService {
         return resolvedPath;
     }
 
-    private static Long calculateOffset(
-            final Long chunkSize,
-            final Long actualChunkSize,
-            final Long chunkIndex,
-            final Long fileSize) {
-
-        if (actualChunkSize < chunkSize)
-            return fileSize - actualChunkSize;
-
-        return chunkIndex * chunkSize;
-
-    }
-
     private static void write(
             final Path fileOutputPath,
             final InputStream inputStream,

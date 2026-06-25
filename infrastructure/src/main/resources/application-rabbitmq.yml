@@ -55,6 +55,33 @@ spring:
               republishToDlq: false
               dlqTtl: 1000
 
+          ## Publish File -------------------------- ##
+          # Outgoing -> Publish File                  #
+          publishFileCommand-out-0:
+            producer:
+              exchangeType: topic
+              routingKeyExpression: "'publish-file'"
+          # Outgoing -> Publish File (error)           #
+          publishFileCommandError-out-0:
+            producer:
+              exchangeType: topic
+              routingKeyExpression: "'publish-file'"
+              queueNameGroupOnly: true
+          # Incoming <- Publish File                   #
+          publishFileCommand-in-0:
+            consumer:
+              exchangeType: topic
+              bindingRoutingKey: publish-file
+              queueNameGroupOnly: true
+              autoBindDlq: true
+              deadLetterExchange: command.exchange.wait
+              deadLetterQueueName: command:publish-file.queue.wait
+              dlqDeadLetterExchange: command.exchange
+              dlqDeadLetterRoutingKey: publish-file
+              republishToDlq: false
+              dlqTtl: 1000
+          ## --------------------------------------- ##
+
           ###### ------- PUBLIC MESSAGES ------- ######
           ## File Created Integration -------------- ##
           # Incoming <- File Created Integration      #
@@ -75,7 +102,7 @@ spring:
           fileCreatedIntegrationError-out-0:
             producer:
               exchangeType: topic
-              routingKeyExpression: "'create-file'"
+              routingKeyExpression: "'drive.file.created'"
               queueNameGroupOnly: true
           ## File Created Integration (retry) ------ ##
           # Incoming <- File Created Integration      #
@@ -89,6 +116,42 @@ spring:
               deadLetterQueueName: storage.drive.file.created.queue.wait
               dlqDeadLetterExchange: storage.exchange
               dlqDeadLetterRoutingKey: drive.file.created
+              republishToDlq: false
+              dlqTtl: 1000
+          ## --------------------------------------- ##
+          ## File Publication Initiated Integration -------------- ##
+          # Incoming <- File Publication Initiated Integration      #
+          filePublicationInitiatedIntegration-in-0:
+            consumer:
+              exchangeType: topic
+              bindingRoutingKey: drive.file:publication.initiated
+              queueNameGroupOnly: true
+              autoBindDlq: true
+              deadLetterExchange: storage.exchange.wait
+              deadLetterQueueName: storage.drive.file:publication.initiated.queue.wait
+              dlqDeadLetterExchange: storage.exchange
+              dlqDeadLetterRoutingKey: drive.file:publication.initiated
+              republishToDlq: false
+              dlqTtl: 1000
+          ## ------------------------------------------ ##
+          # Outgoing -> File Publication Initiated Integration (error) #
+          filePublicationInitiatedIntegrationError-out-0:
+            producer:
+              exchangeType: topic
+              routingKeyExpression: "'drive.file:publication.initiated'"
+              queueNameGroupOnly: true
+          ## File Publication Initiated Integration (retry) ------ ##
+          # Incoming <- File Publication Initiated Integration      #
+          filePublicationInitiatedIntegrationRetry-in-0:
+            consumer:
+              exchangeType: topic
+              bindingRoutingKey: drive.file:publication.initiated
+              queueNameGroupOnly: true
+              autoBindDlq: true
+              deadLetterExchange: storage.exchange.wait
+              deadLetterQueueName: storage.drive.file:publication.initiated.queue.wait
+              dlqDeadLetterExchange: storage.exchange
+              dlqDeadLetterRoutingKey: drive.file:publication.initiated
               republishToDlq: false
               dlqTtl: 1000
           ## --------------------------------------- ##

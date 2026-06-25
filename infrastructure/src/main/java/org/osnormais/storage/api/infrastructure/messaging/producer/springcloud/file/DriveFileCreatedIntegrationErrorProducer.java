@@ -7,12 +7,12 @@ import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DriveFileCreatedIntegrationErrorConsumer
+public class DriveFileCreatedIntegrationErrorProducer
         extends SpringCloudMessageProducer<Message<DriveFileIntegrationMessage>> {
 
     private static final String BINDING_NAME = "fileCreatedIntegrationError-out-0";
 
-    public DriveFileCreatedIntegrationErrorConsumer(final StreamBridge streamBridge) {
+    public DriveFileCreatedIntegrationErrorProducer(final StreamBridge streamBridge) {
         super(streamBridge, BINDING_NAME);
     }
 
