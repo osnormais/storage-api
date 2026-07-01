@@ -26,9 +26,7 @@ public class PublishFileCommandConsumer extends RabbitMQMessageConsumer<PublishF
 
     @Override
     public void consume(final Message<PublishFileCommand> message) {
-
         publishFileUseCase.execute(new PublishFileInput(message.getPayload().id()));
-
     }
 
 }

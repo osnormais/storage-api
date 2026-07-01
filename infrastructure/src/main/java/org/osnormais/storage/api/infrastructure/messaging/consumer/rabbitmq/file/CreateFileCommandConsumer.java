@@ -27,7 +27,6 @@ public class CreateFileCommandConsumer extends RabbitMQMessageConsumer<CreateFil
     @Override
     public void consume(final Message<CreateFileCommand> message) {
 
-        // TODO testar wait
         createFileUseCase
                 .execute(new CreateFileInput(
                         message.getPayload().id(),

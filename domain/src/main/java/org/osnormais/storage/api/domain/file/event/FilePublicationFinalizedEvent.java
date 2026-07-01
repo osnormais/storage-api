@@ -3,35 +3,38 @@ package org.osnormais.storage.api.domain.file.event;
 import java.time.Instant;
 import java.util.Set;
 
-import org.osnormais.storage.api.domain.Entity;
 import org.osnormais.storage.api.domain.event.DomainEvent;
 import org.osnormais.storage.api.domain.event.DomainEventEntity;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
 
-public class FilePublishedEvent extends DomainEvent<FileId> {
+public class FilePublicationFinalizedEvent extends DomainEvent<FileId> {
 
-    private static final Class<? extends Entity<?>> ENTITY_CLASS = File.class;
-    private static final String ACTION = "published";
+    private static final Class<File> ENTITY_CLASS = File.class;
+    private static final String SUB_RESOURCE = "publication";
+    private static final String ACTION = "finalized";
 
-    private FilePublishedEvent(
+    FilePublicationFinalizedEvent() {
+    }
+
+    private FilePublicationFinalizedEvent(
             final File file,
             final Instant occurredAt,
             final Set<DomainEventEntity> relatedEntities) {
         super(
                 file,
-                null,
+                SUB_RESOURCE,
                 ACTION,
                 occurredAt,
                 relatedEntities);
     }
 
-    public static FilePublishedEvent create(final File file) {
-        return new FilePublishedEvent(file, Instant.now(), Set.of(DomainEventEntity.of(file)));
+    public static FilePublicationFinalizedEvent create(final File file) {
+        return new FilePublicationFinalizedEvent(file, Instant.now(), Set.of(DomainEventEntity.of(file)));
     }
 
     public static String eventKey() {
-        return DomainEvent.key(ENTITY_CLASS, null, ACTION);
+        return DomainEvent.key(ENTITY_CLASS, SUB_RESOURCE, ACTION);
     }
 
 }

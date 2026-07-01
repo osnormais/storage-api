@@ -6,6 +6,7 @@ import org.osnormais.storage.api.application.usecase.file.create.CreateFileUseCa
 import org.osnormais.storage.api.application.usecase.file.publish.PublishFileUseCase;
 import org.osnormais.storage.api.infrastructure.file.data.message.command.CreateFileCommand;
 import org.osnormais.storage.api.infrastructure.file.data.message.command.PublishFileCommand;
+import org.osnormais.storage.api.infrastructure.file.data.message.integration.drive.DriveFileEventMessage;
 import org.osnormais.storage.api.infrastructure.file.data.message.integration.drive.DriveFileIntegrationMessage;
 import org.osnormais.storage.api.infrastructure.messaging.consumer.rabbitmq.file.CreateFileCommandConsumer;
 import org.osnormais.storage.api.infrastructure.messaging.consumer.rabbitmq.file.DriveFileCreatedIntegrationConsumer;
@@ -37,7 +38,7 @@ public class MessageConsumerConfig {
     }
 
     @Bean
-    Consumer<Message<DriveFileIntegrationMessage>> driveFilePublicationInitiatedIntegrationConsumer(
+    Consumer<Message<DriveFileEventMessage>> driveFilePublicationInitiatedIntegrationConsumer(
             @Value("${application.messaging.public.consumer.drive-file-publication-initiated.max-attempts}") final Long maxAttempts,
             DriveFilePublicationInitiatedIntegrationErrorProducer errorMessageProducer,
             final PublishFileCommandProducer publishFileCommandProducer) {

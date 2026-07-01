@@ -14,8 +14,7 @@ import org.osnormais.storage.api.domain.event.DomainEventSource;
 import org.osnormais.storage.api.domain.exception.FileAlreadyPublishedException;
 import org.osnormais.storage.api.domain.exception.InvalidArgumentException;
 import org.osnormais.storage.api.domain.exception.ValidationException;
-import org.osnormais.storage.api.domain.file.event.FilePublishFailedEvent;
-import org.osnormais.storage.api.domain.file.event.FilePublishedEvent;
+import org.osnormais.storage.api.domain.file.event.FilePublicationFinalizedEvent;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Publication;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
@@ -116,7 +115,6 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
         if (this.checksum.equals(checksum)) {
 
             this.publication = Optional.of(Publication.success());
-            events.add(FilePublishedEvent.create(this));
 
         } else {
 
@@ -125,9 +123,10 @@ public class File extends AggregateRoot<FileId> implements DomainEventSource {
                             .formatted(this.checksum, checksum));
 
             this.publication = Optional.of(Publication.error(error));
-            events.add(FilePublishFailedEvent.create(this));
 
         }
+
+        events.add(FilePublicationFinalizedEvent.create(this));
 
         return this;
 

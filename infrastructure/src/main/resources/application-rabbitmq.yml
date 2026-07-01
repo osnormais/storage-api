@@ -25,23 +25,25 @@ spring:
       default-binder: private-binder
       rabbit:
         bindings:
-          ###### -------- DOMAIN EVENTS -------- ######
-          ## --------------------------------------- ##
 
-          ###### ------ PRIVATE MESSAGES ------- ######
-          ## Create File --------------------------- ##
-          # Outgoing -> Create File                   #
+          ###### (INIT) DOMAIN EVENTS
+          ## ...
+          ###### (END) DOMAIN EVENTS
+
+          ###### (INIT) PRIVATE COMMANDS
+          ## (INIT) Create-File
+          # OUT -> Create-File
           createFileCommand-out-0:
             producer:
               exchangeType: topic
               routingKeyExpression: "'create-file'"
-          # Outgoing -> Create File (error)           #
+          # OUT -> Create-File (error)
           createFileCommandError-out-0:
             producer:
               exchangeType: topic
               routingKeyExpression: "'create-file'"
               queueNameGroupOnly: true
-          # Incoming <- Create File                   #
+          # IN <- Create-File
           createFileCommand-in-0:
             consumer:
               exchangeType: topic
@@ -54,20 +56,20 @@ spring:
               dlqDeadLetterRoutingKey: create-file
               republishToDlq: false
               dlqTtl: 1000
-
-          ## Publish File -------------------------- ##
-          # Outgoing -> Publish File                  #
+          ## (END) Create-File
+          ## (INIT) Publish-File
+          # OUT -> Publish-File
           publishFileCommand-out-0:
             producer:
               exchangeType: topic
               routingKeyExpression: "'publish-file'"
-          # Outgoing -> Publish File (error)           #
+          # OUT -> Publish-File (error)
           publishFileCommandError-out-0:
             producer:
               exchangeType: topic
               routingKeyExpression: "'publish-file'"
               queueNameGroupOnly: true
-          # Incoming <- Publish File                   #
+          # IN <- Publish-File
           publishFileCommand-in-0:
             consumer:
               exchangeType: topic
@@ -80,12 +82,21 @@ spring:
               dlqDeadLetterRoutingKey: publish-file
               republishToDlq: false
               dlqTtl: 1000
-          ## --------------------------------------- ##
+          ## (END) Publish-File
+          ###### (END) PRIVATE COMMANDS
 
-          ###### ------- PUBLIC MESSAGES ------- ######
-          ## File Created Integration -------------- ##
-          # Incoming <- File Created Integration      #
-          fileCreatedIntegration-in-0:
+          ##### (INIT) INTEGRATION MESSAGES
+          ## (INIT) File Publication Finalized
+          # OUT -> File Publication Finalized
+          filePublicationFinalizedIntegration-out-0:            
+            producer:
+              exchangeType: topic
+              routingKeyExpression: "'drive.file:publication.finalized'"
+          ## (END) File Publication Finalized
+          ### (INIT) DRIVE
+          ## (INIT) File Created (DRIVE)
+          # IN <- file created integration (DRIVE)
+          driveFileCreatedIntegration-in-0:
             consumer:
               exchangeType: topic
               bindingRoutingKey: drive.file.created
@@ -97,31 +108,16 @@ spring:
               dlqDeadLetterRoutingKey: drive.file.created
               republishToDlq: false
               dlqTtl: 1000
-          ## ------------------------------------------ ##
-          # Outgoing -> File Created Integration (error) #
-          fileCreatedIntegrationError-out-0:
+          # OUT -> File Created Integration [error]
+          driveFileCreatedIntegrationError-out-0:
             producer:
               exchangeType: topic
               routingKeyExpression: "'drive.file.created'"
               queueNameGroupOnly: true
-          ## File Created Integration (retry) ------ ##
-          # Incoming <- File Created Integration      #
-          fileCreatedIntegrationRetry-in-0:
-            consumer:
-              exchangeType: topic
-              bindingRoutingKey: drive.file.created
-              queueNameGroupOnly: true
-              autoBindDlq: true
-              deadLetterExchange: storage.exchange.wait
-              deadLetterQueueName: storage.drive.file.created.queue.wait
-              dlqDeadLetterExchange: storage.exchange
-              dlqDeadLetterRoutingKey: drive.file.created
-              republishToDlq: false
-              dlqTtl: 1000
-          ## --------------------------------------- ##
-          ## File Publication Initiated Integration -------------- ##
-          # Incoming <- File Publication Initiated Integration      #
-          filePublicationInitiatedIntegration-in-0:
+          ## (END) File Created (DRIVE)
+          ## (INIT) File Publication Initiated (DRIVE)
+          # IN <- File Publication Initiated Integration (DRIVE)
+          driveFilePublicationInitiatedIntegration-in-0:
             consumer:
               exchangeType: topic
               bindingRoutingKey: drive.file:publication.initiated
@@ -133,28 +129,15 @@ spring:
               dlqDeadLetterRoutingKey: drive.file:publication.initiated
               republishToDlq: false
               dlqTtl: 1000
-          ## ------------------------------------------ ##
-          # Outgoing -> File Publication Initiated Integration (error) #
-          filePublicationInitiatedIntegrationError-out-0:
+          # OUT -> File Publication Initiated Integration [error]
+          driveFilePublicationInitiatedIntegrationError-out-0:
             producer:
               exchangeType: topic
               routingKeyExpression: "'drive.file:publication.initiated'"
               queueNameGroupOnly: true
-          ## File Publication Initiated Integration (retry) ------ ##
-          # Incoming <- File Publication Initiated Integration      #
-          filePublicationInitiatedIntegrationRetry-in-0:
-            consumer:
-              exchangeType: topic
-              bindingRoutingKey: drive.file:publication.initiated
-              queueNameGroupOnly: true
-              autoBindDlq: true
-              deadLetterExchange: storage.exchange.wait
-              deadLetterQueueName: storage.drive.file:publication.initiated.queue.wait
-              dlqDeadLetterExchange: storage.exchange
-              dlqDeadLetterRoutingKey: drive.file:publication.initiated
-              republishToDlq: false
-              dlqTtl: 1000
-          ## --------------------------------------- ##
+          ## (END) File Publication Initiated (DRIVE)
+          ### (END) DRIVE
+          ##### (END) INTEGRATION MESSAGES
 
 rabbitmq:
   host: ${RABBITMQ_HOST:localhost}

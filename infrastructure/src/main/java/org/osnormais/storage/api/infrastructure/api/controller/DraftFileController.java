@@ -12,6 +12,8 @@ import org.osnormais.storage.api.application.usecase.file.chunk.upload.UploadFil
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileInput;
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileOutput;
 import org.osnormais.storage.api.application.usecase.file.create.CreateFileUseCase;
+import org.osnormais.storage.api.application.usecase.file.publish.PublishFileInput;
+import org.osnormais.storage.api.application.usecase.file.publish.PublishFileUseCase;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RequestMapping("draft/files")
@@ -33,14 +37,27 @@ public class DraftFileController {
     private final CreateFileUseCase createFileUseCase;
     private final UploadFileChunkUseCase uploadFileChunkUseCase;
     private final DownloadFileChunkUseCase downloadFileChunkUseCase;
+    private final PublishFileUseCase publishFileUseCase;
 
     public DraftFileController(
             CreateFileUseCase createFileUseCase,
             UploadFileChunkUseCase uploadFileChunkUseCase,
-            DownloadFileChunkUseCase downloadFileChunkUseCase) {
+            DownloadFileChunkUseCase downloadFileChunkUseCase,
+            PublishFileUseCase publishFileUseCase) {
         this.createFileUseCase = createFileUseCase;
         this.uploadFileChunkUseCase = uploadFileChunkUseCase;
         this.downloadFileChunkUseCase = downloadFileChunkUseCase;
+        this.publishFileUseCase = publishFileUseCase;
+    }
+
+    @Operation(summary = "Publish file", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("{fileId}/publish")
+    public ResponseEntity<Void> publishFile(@RequestHeader UUID fileId) {
+
+        publishFileUseCase.execute(new PublishFileInput(fileId));
+
+        return ResponseEntity.noContent().build();
+
     }
 
     @GetMapping("{fileId}/chunks")

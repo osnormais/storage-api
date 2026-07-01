@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class DriveFileCreatedIntegrationErrorProducer
         extends SpringCloudMessageProducer<Message<DriveFileIntegrationMessage>> {
 
-    private static final String BINDING_NAME = "fileCreatedIntegrationError-out-0";
+    private static final String BINDING_NAME = "driveFileCreatedIntegrationError-out-0";
 
     public DriveFileCreatedIntegrationErrorProducer(final StreamBridge streamBridge) {
         super(streamBridge, BINDING_NAME);
