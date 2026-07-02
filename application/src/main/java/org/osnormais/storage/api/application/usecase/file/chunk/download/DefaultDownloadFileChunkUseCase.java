@@ -3,16 +3,11 @@ package org.osnormais.storage.api.application.usecase.file.chunk.download;
 import org.osnormais.storage.api.application.commons.annotation.Transactional;
 import org.osnormais.storage.api.application.exception.ConcurrentChunkLimitExceededException;
 import org.osnormais.storage.api.application.exception.NotFoundException;
-import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
 import org.osnormais.storage.api.application.gateway.file.FileQueryGateway;
 import org.osnormais.storage.api.application.port.ChunkReader;
 import org.osnormais.storage.api.application.port.ConcurrencyTracker;
 import org.osnormais.storage.api.domain.file.File;
 import org.osnormais.storage.api.domain.file.FileId;
-import org.osnormais.storage.api.domain.file.TransferChannel;
-import org.osnormais.storage.api.domain.file.valueobject.ParallelChunkLimit;
-import org.osnormais.storage.api.domain.file.valueobject.Size;
-import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 
 public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
 
@@ -34,24 +29,19 @@ public class DefaultDownloadFileChunkUseCase extends DownloadFileChunkUseCase {
     public DownloadFileChunkOutput execute(final DownloadFileChunkInput input) {
 
         final FileId fileId = FileId.of(input.fileId());
-        final Long chunkIndex = input.chunkIndex();
+        final Long chunkSize = input.chunkSize();
+        final Long chunkOffset = input.chunkOffset();
+        final Integer maxParallelChunks = input.maxParallelChunks();
+        final Long throughputLimit = input.throughputLimit();
 
         final File file = fileQueryGateway
                 .findById(fileId)
                 .orElseThrow(() -> NotFoundException.create(File.class, fileId));
 
-        final TransferChannel downloadChannel = file
-                .getDownloadChannel()
-                .filter(TransferChannel::isOpen)
-                .orElseThrow(() -> TransferChannelNotAvailableException.download(fileId));
+        if (!file.isPublished())// TODO exception específica
+            throw new RuntimeException(String.format("File with id %s is not published yet", fileId.getValue()));
 
-        final Size fileSize = file.getSize();
-        final Size chunkSize = downloadChannel.getChunkSpecification().effectiveChunkSize(fileSize, chunkIndex);
-        final Long chunkOffset = downloadChannel.getChunkSpecification().chunkOffset(fileSize, chunkIndex);
-        final ParallelChunkLimit maxParallelChunks = downloadChannel.getChunkSpecification().maxParallel();
-        final ThroughputLimit throughputLimit = downloadChannel.getThroughputLimit();
-
-        if (!concurrencyTracker.tryIncrement(fileId, maxParallelChunks.value()))
+        if (!concurrencyTracker.tryIncrement(fileId, maxParallelChunks))
             throw ConcurrentChunkLimitExceededException.create(maxParallelChunks);
 
         try {

@@ -6,8 +6,6 @@ import java.util.Objects;
 import org.osnormais.storage.api.application.port.ChunkWriter;
 import org.osnormais.storage.api.domain.file.FileId;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
-import org.osnormais.storage.api.domain.file.valueobject.Size;
-import org.osnormais.storage.api.domain.file.valueobject.ThroughputLimit;
 
 public class ChunkStorageWriter implements ChunkWriter {
 
@@ -21,8 +19,8 @@ public class ChunkStorageWriter implements ChunkWriter {
     public Checksum writeChunk(
             FileId key,
             Long chunkIndex,
-            Size chunkSize,
-            ThroughputLimit throughputLimit,
+            Long chunkSizeInBytes,
+            Long throughputLimitInBytesPerSecond,
             Checksum.Algorithm checksumAlgorithm,
             InputStream inputStream) {
 
@@ -36,8 +34,8 @@ public class ChunkStorageWriter implements ChunkWriter {
         return storageWriter.write(
                 chunkStorageKey,
                 inputStream,
-                chunkSize.bytes(),
-                throughputLimit.bytesPerSecond(),
+                chunkSizeInBytes,
+                throughputLimitInBytesPerSecond,
                 checksumAlgorithm);
 
     }

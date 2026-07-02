@@ -3,28 +3,41 @@ server:
 spring:
   profiles:
     active:
+      - security
       - spring-cloud
       - hibernate
       - ${application.vendor.messaging}
       - ${application.vendor.concurrency-tracker}
       - ${application.vendor.database}
       - ${application.vendor.storage}
+      - ${application.token.signature.public-key.source}
 
 application:
   name: storage-api
   server:
     port: ${SERVER_PORT:8080}
+  token:
+    signature:
+      algorithm: ${APPLICATION_TOKEN_SIGNATURE_ALGORITHM:ECDSA256}
+      public-key:
+        source: ${TOKEN_SIGNATURE_PUBLIC_KEY_SOURCE:env}
   messaging:
     private:
       consumer:
-        file-upload-transfer-channel-completed:
-          concurrency: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_CONCURRENCY:1}
-          max-attempts: ${CONSUMER_FILE_UPLOAD_TRANSFER_CHANNEL_COMPLETED_MAX_ATTEMPTS:5}
+        create-file-command:
+          concurrency: ${CONSUMER_CREATE_FILE_COMMAND_CONCURRENCY:1}
+          max-attempts: ${CONSUMER_CREATE_FILE_COMMAND_MAX_ATTEMPTS:5}
+        publish-file-command:
+          concurrency: ${CONSUMER_PUBLISH_FILE_COMMAND_CONCURRENCY:1}
+          max-attempts: ${CONSUMER_PUBLISH_FILE_COMMAND_MAX_ATTEMPTS:5}
     public:
       consumer:
         drive-file-created:
           concurrency: ${CONSUMER_DRIVE_FILE_CREATED_CONCURRENCY:1}
           max-attempts: ${CONSUMER_DRIVE_FILE_CREATED_MAX_ATTEMPTS:5}
+        drive-file-publication-initiated:
+          concurrency: ${CONSUMER_DRIVE_FILE_PUBLICATION_INITIATED_CONCURRENCY:1}
+          max-attempts: ${CONSUMER_DRIVE_FILE_PUBLICATION_INITIATED_MAX_ATTEMPTS:5}
   outbox:
     relay:
       fixed-rate: ${OUTBOX_RELAY_FIXED_RATE:60000}

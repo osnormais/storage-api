@@ -23,6 +23,14 @@ public final class FileSystemUtils {
     private FileSystemUtils() {
     }
 
+    public static Long size(final Path filePath) {
+        try {
+            return Files.size(filePath);
+        } catch (IOException e) {
+            throw UnexpectedException.with("Failed to get file size: " + filePath.toString(), e);
+        }
+    }
+
     public static Boolean exists(final Path filePath) {
         return Files.exists(filePath);
     }

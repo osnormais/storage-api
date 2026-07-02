@@ -15,8 +15,8 @@ public record Publication(
         Publication.Status status,
         Optional<Publication.Error> error) implements ValueObject {
 
-    public static Publication ok() {
-        return new Publication(Instant.now(), Status.OK, Optional.empty());
+    public static Publication success() {
+        return new Publication(Instant.now(), Status.SUCCESS, Optional.empty());
     }
 
     public static Publication error(final Publication.Error error) {
@@ -38,13 +38,13 @@ public record Publication(
         if ((isNull(error) || error.isEmpty()) && Status.ERROR.equals(status))
             handler.append(new ValidationError("Publication.error should not be null when status is ERROR"));
 
-        if (nonNull(error) && error.isPresent() && Status.OK.equals(status))
-            handler.append(new ValidationError("Publication.error should be empty when status is OK"));
+        if (nonNull(error) && error.isPresent() && Status.SUCCESS.equals(status))
+            handler.append(new ValidationError("Publication.error should be empty when status is SUCCESS"));
 
     }
 
     public enum Status {
-        OK, ERROR
+        SUCCESS, ERROR
     }
 
     public record Error(String message) implements ValueObject {

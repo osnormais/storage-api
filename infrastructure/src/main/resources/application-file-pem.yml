@@ -1,0 +1,4 @@
+token:
+  signature:
+    public-key:
+      file-path: ${TOKEN_SIGNATURE_PUBLIC_KEY_PATH}

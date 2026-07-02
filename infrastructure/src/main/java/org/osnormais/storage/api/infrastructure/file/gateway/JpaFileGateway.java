@@ -32,7 +32,7 @@ public class JpaFileGateway implements FileCommandGateway, FileQueryGateway {
 
     @Transactional(propagation = Propagation.MANDATORY)
     @Override
-    public File create(final File file) {
+    public void create(final File file) {
 
         if (fileRepository.existsById(file.getId().getValue()))
             throw ResourceAlreadyExistsException
@@ -40,19 +40,16 @@ public class JpaFileGateway implements FileCommandGateway, FileQueryGateway {
 
         save(file);
 
-        return file;
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
     @Override
-    public File update(final File file) {
+    public void update(final File file) {
 
         if (!fileRepository.existsById(file.getId().getValue()))
             throw new IllegalStateException("File with id %s does not exist".formatted(file.getId().getStringValue()));
 
         save(file);
-
-        return file;
 
     }
 

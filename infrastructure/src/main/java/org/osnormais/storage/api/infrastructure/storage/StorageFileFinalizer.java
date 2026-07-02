@@ -2,10 +2,8 @@ package org.osnormais.storage.api.infrastructure.storage;
 
 import static java.util.Objects.requireNonNull;
 
-import org.osnormais.storage.api.application.exception.TransferChannelNotAvailableException;
 import org.osnormais.storage.api.application.port.FileFinalizer;
 import org.osnormais.storage.api.domain.file.File;
-import org.osnormais.storage.api.domain.file.TransferChannel;
 import org.osnormais.storage.api.domain.file.valueobject.Checksum;
 import org.osnormais.storage.api.domain.file.valueobject.Size;
 
@@ -27,13 +25,8 @@ public class StorageFileFinalizer implements FileFinalizer {
         final StorageKey storageKey = StorageKey.of(file.getId().getStringValue());
         final Size fileSize = file.getSize();
         final Checksum.Algorithm checksumAlgorithm = file.getChecksum().algorithm();
-        final Size chunkSize = file
-                .getUploadChannel()
-                .map(TransferChannel::getChunkSpecification)
-                .map(chunkSpecification -> chunkSpecification.effectiveChunkSize(fileSize))
-                .orElseThrow(() -> TransferChannelNotAvailableException.upload(file.getId()));
 
-        assembler.assemble(storageKey, fileSize.bytes(), chunkSize.bytes());
+        assembler.assemble(storageKey, fileSize.bytes());
 
         return checksumProvider.calculateChecksum(storageKey, checksumAlgorithm);
 

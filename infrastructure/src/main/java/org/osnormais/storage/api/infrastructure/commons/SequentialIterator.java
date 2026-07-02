@@ -68,8 +68,8 @@ public final class SequentialIterator<T> implements Iterator<T> {
 
     private static <T> void validate(final Set<Item<T>> items) {
 
-        if (isNull(items) || items.isEmpty())
-            throw InvalidArgumentException.with("Items cannot be null or empty.");
+        if (isNull(items))
+            throw InvalidArgumentException.with("Items cannot be null.");
 
         final List<Long> positions = items.stream()
                 .map(Item::position)

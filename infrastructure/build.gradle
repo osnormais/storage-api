@@ -23,6 +23,10 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
+    implementation 'com.auth0:java-jwt:4.5.2'
+
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.postgresql:postgresql:42.7.10'
     implementation 'com.h2database:h2:2.4.240'
